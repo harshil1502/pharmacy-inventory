@@ -4,28 +4,28 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-bold tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1419] disabled:pointer-events-none disabled:opacity-40 active:scale-95 relative overflow-hidden group',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/40 hover:shadow-2xl hover:shadow-indigo-500/60 hover:scale-105 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700',
+          'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700',
         destructive:
-          'bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/40 hover:shadow-2xl hover:shadow-rose-500/60 hover:scale-105 before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700',
+          'bg-red-600 text-white shadow-sm hover:bg-red-700',
         outline:
-          'border-2 border-white/10 bg-white/5 backdrop-blur-sm text-slate-200 hover:bg-white/10 hover:border-indigo-400/50 hover:text-white hover:shadow-lg hover:shadow-indigo-500/20',
+          'border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50',
         secondary:
-          'bg-gradient-to-r from-slate-700 to-slate-600 text-slate-100 shadow-md hover:from-slate-600 hover:to-slate-500 hover:shadow-xl',
-        ghost: 'hover:bg-white/10 hover:text-white text-slate-300 backdrop-blur-sm',
-        link: 'text-indigo-400 underline-offset-4 hover:underline hover:text-indigo-300',
-        success: 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/40 hover:shadow-2xl hover:shadow-emerald-500/60 hover:scale-105',
-        warning: 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/40 hover:shadow-2xl hover:shadow-amber-500/60 hover:scale-105',
+          'bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-200',
+        ghost: 'text-gray-700 hover:bg-gray-100',
+        link: 'text-indigo-600 underline-offset-4 hover:underline',
+        success: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700',
+        warning: 'bg-amber-500 text-white shadow-sm hover:bg-amber-600',
       },
       size: {
-        default: 'h-11 px-6 py-2.5',
-        sm: 'h-9 rounded-lg px-4 text-xs',
-        lg: 'h-14 rounded-2xl px-10 text-base',
-        icon: 'h-11 w-11',
+        default: 'h-9 px-4 py-2',
+        sm: 'h-8 rounded-md px-3 text-xs',
+        lg: 'h-10 rounded-md px-6',
+        icon: 'h-9 w-9',
       },
     },
     defaultVariants: {

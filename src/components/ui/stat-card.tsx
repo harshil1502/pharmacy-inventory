@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import {
   Package,
   DollarSign,
@@ -20,6 +19,15 @@ const iconMap = {
   alert: AlertTriangle,
   trending: TrendingUp,
 } as const;
+
+const iconBgMap: Record<string, string> = {
+  'text-indigo-400': 'bg-indigo-50 text-indigo-600',
+  'text-emerald-400': 'bg-emerald-50 text-emerald-600',
+  'text-blue-400': 'bg-blue-50 text-blue-600',
+  'text-pink-400': 'bg-pink-50 text-pink-600',
+  'text-orange-400': 'bg-orange-50 text-orange-600',
+  'text-rose-400': 'bg-rose-50 text-rose-600',
+};
 
 interface StatCardProps {
   title: string;
@@ -42,89 +50,44 @@ export function StatCard({
   icon,
   iconColor = 'text-indigo-400',
   trend,
-  index = 0,
-  gradient = 'from-indigo-500/10 via-pink-500/5 to-transparent',
 }: StatCardProps) {
   const Icon = iconMap[icon];
+  const iconBg = iconBgMap[iconColor] || 'bg-indigo-50 text-indigo-600';
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.5,
-        delay: index * 0.1,
-        ease: [0.4, 0, 0.2, 1],
-      }}
-      whileHover={{
-        y: -4,
-        transition: { duration: 0.2 },
-      }}
-    >
-      <Card className={cn(
-        'group relative overflow-hidden border-white/10 bg-gradient-to-br',
-        gradient,
-        'backdrop-blur-xl hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/20'
-      )}>
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent" />
+    <Card className="border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-gray-500">
+          {title}
+        </CardTitle>
+        <div className={cn('h-9 w-9 rounded-lg flex items-center justify-center', iconBg)}>
+          <Icon className="h-4 w-4" />
         </div>
-
-        <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
-          <CardTitle className="text-sm font-bold text-slate-300 group-hover:text-slate-200 transition-colors tracking-wide uppercase">
-            {title}
-          </CardTitle>
-          <motion.div
-            whileHover={{ rotate: 360, scale: 1.1 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="relative"
-          >
-            <div className={cn(
-              "absolute inset-0 blur-xl opacity-50 group-hover:opacity-80 transition-opacity",
-              iconColor.replace('text-', 'bg-')
-            )} />
-            <Icon className={cn('h-5 w-5 relative z-10', iconColor, 'drop-shadow-[0_0_8px_currentColor]')} />
-          </motion.div>
-        </CardHeader>
-
-        <CardContent className="relative z-10">
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: index * 0.1 + 0.2 }}
-            className="text-3xl font-black text-white mb-2 tracking-tight group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-indigo-200 group-hover:to-pink-200 group-hover:bg-clip-text transition-all duration-300"
-          >
-            {value}
-          </motion.div>
-
-          <div className="flex items-center justify-between">
-            {subtitle && (
-              <p className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors font-medium">
-                {subtitle}
-              </p>
-            )}
-
-            {trend && (
-              <motion.span
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 + 0.3 }}
-                className={cn(
-                  'text-xs font-bold px-2 py-1 rounded-lg',
-                  trend.isPositive
-                    ? 'text-emerald-300 bg-emerald-500/20'
-                    : 'text-rose-300 bg-rose-500/20'
-                )}
-              >
-                {trend.isPositive ? '+' : ''}{trend.value}%
-              </motion.span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-semibold text-gray-900 tracking-tight">
+          {value}
+        </div>
+        <div className="flex items-center justify-between mt-1">
+          {subtitle && (
+            <p className="text-xs text-gray-500">
+              {subtitle}
+            </p>
+          )}
+          {trend && (
+            <span
+              className={cn(
+                'text-xs font-medium px-1.5 py-0.5 rounded',
+                trend.isPositive
+                  ? 'text-emerald-700 bg-emerald-50'
+                  : 'text-red-700 bg-red-50'
+              )}
+            >
+              {trend.isPositive ? '+' : ''}{trend.value}%
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

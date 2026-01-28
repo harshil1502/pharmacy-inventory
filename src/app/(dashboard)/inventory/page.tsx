@@ -41,8 +41,8 @@ export default function InventoryPage() {
     direction: 'asc',
   });
 
-  // Only admins can see cost data
-  const isAdmin = user?.role === 'admin';
+  // Admins and associates can see cost data
+  const isAdmin = user?.role === 'admin' || user?.role === 'associate';
 
   useEffect(() => {
     const fetchInventory = async () => {

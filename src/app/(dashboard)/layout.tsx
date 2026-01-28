@@ -101,24 +101,10 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B0F19] via-[#0F1419] to-[#0B0F19] relative overflow-hidden">
-        {/* Animated background orbs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-
-        <div className="text-center relative z-10">
-          <div className="relative">
-            <Loader2 className="h-16 w-16 animate-spin text-indigo-500 mx-auto drop-shadow-[0_0_25px_rgba(99,102,241,0.6)]" />
-            <div className="absolute inset-0 h-16 w-16 mx-auto">
-              <div className="w-full h-full rounded-full border-2 border-indigo-500/30 animate-ping" />
-            </div>
-          </div>
-          <p className="mt-6 text-slate-200 font-bold text-lg tracking-wide">Loading PharmSync<span className="animate-pulse">...</span></p>
-          <div className="mt-4 flex justify-center gap-1">
-            <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" />
-            <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce delay-100" />
-            <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce delay-200" />
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mx-auto" />
+          <p className="mt-4 text-gray-500 font-medium text-sm">Loading PharmSync...</p>
         </div>
       </div>
     );
@@ -129,20 +115,13 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] relative overflow-hidden">
-      {/* Animated gradient orbs in background */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-gradient-to-tl from-pink-500/20 via-purple-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
-      <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-gradient-to-r from-teal-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}} />
-
-      <div className="relative z-10">
-        <Sidebar />
-        <div className="lg:pl-72">
-          <Header />
-          <main className="p-6 lg:p-8 animate-fade-in">
-            {children}
-          </main>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <Sidebar />
+      <div className="lg:pl-72">
+        <Header />
+        <main className="p-6 lg:p-8">
+          {children}
+        </main>
       </div>
     </div>
   );

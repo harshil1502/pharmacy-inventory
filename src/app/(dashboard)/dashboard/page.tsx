@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import { StatCard } from '@/components/ui/stat-card';
 import { AgingOverview } from '@/components/dashboard/aging-overview';
@@ -78,36 +77,28 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Page Header with gradient text */}
-      <div className="relative">
-        <div className="absolute -top-10 -left-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <Sparkles className="h-8 w-8 text-indigo-400 animate-pulse drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]" />
-            <h1 className="text-4xl font-black text-transparent bg-gradient-to-r from-indigo-300 via-pink-300 to-teal-300 bg-clip-text animate-gradient bg-[length:200%_auto]">
-              Dashboard
-            </h1>
-          </div>
-          <p className="text-slate-400 text-lg font-medium ml-11">
-            Welcome back to{' '}
-            <span className="text-indigo-400 font-bold">
-              {profile.store?.name || 'your store'}
-            </span>
-          </p>
-        </div>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900">
+          Dashboard
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Welcome back to{' '}
+          <span className="text-indigo-600 font-medium">
+            {profile.store?.name || 'your store'}
+          </span>
+        </p>
       </div>
 
-      {/* Stats Grid with stagger animation */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid */}
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Items"
           value={formatNumber(totalItems)}
           subtitle={`${formatNumber(totalQuantity)} total units`}
           icon="package"
           iconColor="text-indigo-400"
-          index={0}
-          gradient="from-indigo-500/10 via-indigo-600/5 to-transparent"
         />
 
         {isAdmin && (
@@ -117,8 +108,6 @@ export default async function DashboardPage() {
             subtitle="Total cost value"
             icon="dollar"
             iconColor="text-emerald-400"
-            index={1}
-            gradient="from-emerald-500/10 via-emerald-600/5 to-transparent"
           />
         )}
 
@@ -128,8 +117,6 @@ export default async function DashboardPage() {
           subtitle="Pending review"
           icon="arrow-down"
           iconColor="text-blue-400"
-          index={isAdmin ? 2 : 1}
-          gradient="from-blue-500/10 via-blue-600/5 to-transparent"
         />
 
         <StatCard
@@ -138,8 +125,6 @@ export default async function DashboardPage() {
           subtitle="Awaiting response"
           icon="arrow-up"
           iconColor="text-pink-400"
-          index={isAdmin ? 3 : 2}
-          gradient="from-pink-500/10 via-pink-600/5 to-transparent"
         />
       </div>
 
