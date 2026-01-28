@@ -1,0 +1,409 @@
+/**
+ * PharmSync Button Component Stories
+ * Storybook documentation and interactive examples
+ */
+
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+import React from 'react';
+
+// Icons for examples
+const PlusIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M12 4v16m8-8H4"
+    />
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+    />
+  </svg>
+);
+
+const SaveIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+    />
+  </svg>
+);
+
+const ArrowRightIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M13 7l5 5m0 0l-5 5m5-5H6"
+    />
+  </svg>
+);
+
+// =========================================
+// META
+// =========================================
+
+const meta: Meta<typeof Button> = {
+  title: 'Components/Common/Button',
+  component: Button,
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component: `
+Material Design 3 Button component for PharmSync.
+
+## Features
+- 5 variants: primary, secondary, outlined, text, error
+- 3 sizes: small, medium, large
+- Icon support (left/right positioning)
+- Loading state with spinner
+- Full accessibility support
+- Keyboard navigation
+- Elevation transitions
+
+## Usage
+\`\`\`tsx
+import { Button } from '@/components/common/Button';
+
+<Button variant="primary" onClick={handleClick}>
+  Save Changes
+</Button>
+\`\`\`
+        `,
+      },
+    },
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'outlined', 'text', 'error'],
+      description: 'Visual style variant',
+    },
+    size: {
+      control: 'select',
+      options: ['small', 'medium', 'large'],
+      description: 'Button size',
+    },
+    fullWidth: {
+      control: 'boolean',
+      description: 'Full width button',
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Disabled state',
+    },
+    loading: {
+      control: 'boolean',
+      description: 'Loading state with spinner',
+    },
+    iconPosition: {
+      control: 'select',
+      options: ['left', 'right'],
+      description: 'Icon position relative to text',
+    },
+    children: {
+      control: 'text',
+      description: 'Button text content',
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+// =========================================
+// STORIES
+// =========================================
+
+// Default
+export const Default: Story = {
+  args: {
+    children: 'Button',
+    variant: 'primary',
+    size: 'medium',
+  },
+};
+
+// Variants
+export const Variants: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <Button variant="primary">Primary</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="outlined">Outlined</Button>
+      <Button variant="text">Text</Button>
+      <Button variant="error">Delete</Button>
+    </div>
+  ),
+};
+
+// Sizes
+export const Sizes: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <Button size="small">Small</Button>
+      <Button size="medium">Medium</Button>
+      <Button size="large">Large</Button>
+    </div>
+  ),
+};
+
+// With Icons (Left)
+export const WithIconsLeft: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <Button variant="primary" icon={<PlusIcon />}>
+        Add Item
+      </Button>
+      <Button variant="secondary" icon={<SaveIcon />}>
+        Save
+      </Button>
+      <Button variant="outlined" icon={<PlusIcon />}>
+        New
+      </Button>
+      <Button variant="error" icon={<TrashIcon />}>
+        Delete
+      </Button>
+    </div>
+  ),
+};
+
+// With Icons (Right)
+export const WithIconsRight: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <Button variant="primary" icon={<ArrowRightIcon />} iconPosition="right">
+        Next Step
+      </Button>
+      <Button variant="secondary" icon={<ArrowRightIcon />} iconPosition="right">
+        Continue
+      </Button>
+      <Button variant="outlined" icon={<ArrowRightIcon />} iconPosition="right">
+        Proceed
+      </Button>
+    </div>
+  ),
+};
+
+// Icon Only
+export const IconOnly: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <Button variant="primary" icon={<PlusIcon />} ariaLabel="Add" />
+      <Button variant="secondary" icon={<SaveIcon />} ariaLabel="Save" />
+      <Button variant="outlined" icon={<PlusIcon />} ariaLabel="New" />
+      <Button variant="error" icon={<TrashIcon />} ariaLabel="Delete" />
+    </div>
+  ),
+};
+
+// Icon Only Sizes
+export const IconOnlySizes: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <Button variant="primary" size="small" icon={<PlusIcon />} ariaLabel="Add small" />
+      <Button variant="primary" size="medium" icon={<PlusIcon />} ariaLabel="Add medium" />
+      <Button variant="primary" size="large" icon={<PlusIcon />} ariaLabel="Add large" />
+    </div>
+  ),
+};
+
+// Loading States
+export const LoadingStates: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <Button variant="primary" loading>
+        Loading...
+      </Button>
+      <Button variant="secondary" loading>
+        Saving...
+      </Button>
+      <Button variant="outlined" loading>
+        Processing...
+      </Button>
+    </div>
+  ),
+};
+
+// Disabled States
+export const DisabledStates: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <Button variant="primary" disabled>
+        Disabled Primary
+      </Button>
+      <Button variant="secondary" disabled>
+        Disabled Secondary
+      </Button>
+      <Button variant="outlined" disabled>
+        Disabled Outlined
+      </Button>
+      <Button variant="text" disabled>
+        Disabled Text
+      </Button>
+      <Button variant="error" disabled>
+        Disabled Error
+      </Button>
+    </div>
+  ),
+};
+
+// Full Width
+export const FullWidth: Story = {
+  render: () => (
+    <div style={{ width: '400px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Button variant="primary" fullWidth>
+          Full Width Primary
+        </Button>
+        <Button variant="secondary" fullWidth>
+          Full Width Secondary
+        </Button>
+        <Button variant="outlined" fullWidth>
+          Full Width Outlined
+        </Button>
+      </div>
+    </div>
+  ),
+};
+
+// Real-world Examples
+export const RealWorldExamples: Story = {
+  name: 'Real-world Use Cases',
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '600px' }}>
+      {/* Form Actions */}
+      <div>
+        <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>Form Actions</h3>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+          <Button variant="text">Cancel</Button>
+          <Button variant="primary" icon={<SaveIcon />}>
+            Save Changes
+          </Button>
+        </div>
+      </div>
+
+      {/* Inventory Actions */}
+      <div>
+        <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>
+          Inventory Actions
+        </h3>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <Button variant="primary" icon={<PlusIcon />}>
+            Add Medication
+          </Button>
+          <Button variant="outlined">View Report</Button>
+          <Button variant="secondary">Request Transfer</Button>
+          <Button variant="error" icon={<TrashIcon />}>
+            Remove Item
+          </Button>
+        </div>
+      </div>
+
+      {/* Card Actions */}
+      <div style={{ padding: '24px', border: '1px solid #e0e0e0', borderRadius: '8px' }}>
+        <h3 style={{ marginBottom: '8px', fontSize: '16px', fontWeight: 600 }}>
+          Low Stock Alert
+        </h3>
+        <p style={{ marginBottom: '16px', color: '#666', fontSize: '14px' }}>
+          Acetaminophen 500mg is running low (5 units remaining)
+        </p>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button variant="text" size="small">
+            Dismiss
+          </Button>
+          <Button variant="primary" size="small">
+            Order Now
+          </Button>
+        </div>
+      </div>
+
+      {/* Loading Example */}
+      <div>
+        <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>
+          Loading State
+        </h3>
+        <Button variant="primary" loading fullWidth>
+          Uploading PDF Report...
+        </Button>
+      </div>
+    </div>
+  ),
+};
+
+// Playground (interactive)
+export const Playground: Story = {
+  args: {
+    children: 'Interactive Button',
+    variant: 'primary',
+    size: 'medium',
+    fullWidth: false,
+    disabled: false,
+    loading: false,
+  },
+  argTypes: {
+    onClick: { action: 'clicked' },
+  },
+};
+
+// All Combinations (comprehensive test)
+export const AllCombinations: Story = {
+  name: 'All Variants × All Sizes',
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {['primary', 'secondary', 'outlined', 'text', 'error'].map((variant) => (
+        <div key={variant}>
+          <h4 style={{ marginBottom: '12px', textTransform: 'capitalize', fontSize: '14px' }}>
+            {variant}
+          </h4>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <Button variant={variant as any} size="small">
+              Small
+            </Button>
+            <Button variant={variant as any} size="medium">
+              Medium
+            </Button>
+            <Button variant={variant as any} size="large">
+              Large
+            </Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  ),
+};

@@ -1,0 +1,125 @@
+// ============================================
+// PHARMSYNC - M3 SHAPE SYSTEM
+// Corner Radius Scale & Shape Tokens
+// ============================================
+
+// ---------------------------------------------
+// CORNER RADIUS SCALE
+// ---------------------------------------------
+$md-sys-shape-corner-none: 0px;
+$md-sys-shape-corner-extra-small: 4px;
+$md-sys-shape-corner-small: 8px;
+$md-sys-shape-corner-medium: 12px;
+$md-sys-shape-corner-large: 16px;
+$md-sys-shape-corner-extra-large: 28px;
+$md-sys-shape-corner-full: 9999px;
+
+// ---------------------------------------------
+// COMPONENT SHAPE TOKENS
+// ---------------------------------------------
+
+// Buttons
+$md-sys-shape-button: $md-sys-shape-corner-full;
+$md-sys-shape-button-icon: $md-sys-shape-corner-full;
+
+// Cards
+$md-sys-shape-card: $md-sys-shape-corner-medium;
+$md-sys-shape-card-elevated: $md-sys-shape-corner-medium;
+$md-sys-shape-card-filled: $md-sys-shape-corner-medium;
+$md-sys-shape-card-outlined: $md-sys-shape-corner-medium;
+
+// Chips
+$md-sys-shape-chip: $md-sys-shape-corner-small;
+
+// Dialogs
+$md-sys-shape-dialog: $md-sys-shape-corner-extra-large;
+
+// FAB
+$md-sys-shape-fab: $md-sys-shape-corner-large;
+$md-sys-shape-fab-small: $md-sys-shape-corner-medium;
+$md-sys-shape-fab-large: $md-sys-shape-corner-extra-large;
+
+// Lists
+$md-sys-shape-list-item: $md-sys-shape-corner-none;
+
+// Menus
+$md-sys-shape-menu: $md-sys-shape-corner-extra-small;
+
+// Navigation
+$md-sys-shape-nav-drawer: $md-sys-shape-corner-none;
+$md-sys-shape-nav-item: $md-sys-shape-corner-full;
+
+// Text Fields
+$md-sys-shape-text-field: $md-sys-shape-corner-extra-small;
+$md-sys-shape-text-field-outlined: $md-sys-shape-corner-extra-small;
+
+// Badges
+$md-sys-shape-badge: $md-sys-shape-corner-full;
+
+// Snackbar
+$md-sys-shape-snackbar: $md-sys-shape-corner-extra-small;
+
+// Switch
+$md-sys-shape-switch-track: $md-sys-shape-corner-full;
+$md-sys-shape-switch-handle: $md-sys-shape-corner-full;
+
+// Tooltips
+$md-sys-shape-tooltip: $md-sys-shape-corner-extra-small;
+
+// ---------------------------------------------
+// PHARMSYNC CUSTOM SHAPES
+// ---------------------------------------------
+$pharmsync-shape-sidebar: $md-sys-shape-corner-none;
+$pharmsync-shape-stat-card: $md-sys-shape-corner-medium;
+$pharmsync-shape-table-row: $md-sys-shape-corner-small;
+$pharmsync-shape-status-badge: $md-sys-shape-corner-small;
+$pharmsync-shape-age-badge: $md-sys-shape-corner-extra-small;
+$pharmsync-shape-toggle: $md-sys-shape-corner-full;
+$pharmsync-shape-dropdown: $md-sys-shape-corner-small;
+$pharmsync-shape-avatar: $md-sys-shape-corner-full;
+
+// ---------------------------------------------
+// CSS CUSTOM PROPERTIES
+// ---------------------------------------------
+:root {
+  // Scale
+  --md-sys-shape-corner-none: #{$md-sys-shape-corner-none};
+  --md-sys-shape-corner-extra-small: #{$md-sys-shape-corner-extra-small};
+  --md-sys-shape-corner-small: #{$md-sys-shape-corner-small};
+  --md-sys-shape-corner-medium: #{$md-sys-shape-corner-medium};
+  --md-sys-shape-corner-large: #{$md-sys-shape-corner-large};
+  --md-sys-shape-corner-extra-large: #{$md-sys-shape-corner-extra-large};
+  --md-sys-shape-corner-full: #{$md-sys-shape-corner-full};
+
+  // Components
+  --md-sys-shape-button: #{$md-sys-shape-button};
+  --md-sys-shape-card: #{$md-sys-shape-card};
+  --md-sys-shape-chip: #{$md-sys-shape-chip};
+  --md-sys-shape-dialog: #{$md-sys-shape-dialog};
+  --md-sys-shape-fab: #{$md-sys-shape-fab};
+  --md-sys-shape-text-field: #{$md-sys-shape-text-field};
+  --md-sys-shape-badge: #{$md-sys-shape-badge};
+}
+
+// ---------------------------------------------
+// SHAPE MIXINS
+// ---------------------------------------------
+@mixin shape($radius) {
+  border-radius: $radius;
+}
+
+@mixin shape-top($radius) {
+  border-radius: $radius $radius 0 0;
+}
+
+@mixin shape-bottom($radius) {
+  border-radius: 0 0 $radius $radius;
+}
+
+@mixin shape-start($radius) {
+  border-radius: $radius 0 0 $radius;
+}
+
+@mixin shape-end($radius) {
+  border-radius: 0 $radius $radius 0;
+}

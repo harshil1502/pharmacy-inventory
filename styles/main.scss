@@ -1,0 +1,48 @@
+// ============================================
+// PHARMSYNC - MAIN STYLESHEET
+// Material Design 3 Style System
+// Entry point for all SCSS imports
+// ============================================
+
+// ---------------------------------------------
+// ABSTRACTS
+// Variables, functions, mixins - no CSS output
+// ---------------------------------------------
+@import 'abstracts/variables';
+
+// ---------------------------------------------
+// BASE
+// Reset and global styles
+// ---------------------------------------------
+@import 'base/reset';
+@import 'base/global';
+
+// ---------------------------------------------
+// COMPONENTS
+// Component-specific styles
+// ---------------------------------------------
+@import 'components/index';
+
+// ---------------------------------------------
+// PROJECT INFO
+// ---------------------------------------------
+// PharmSync Global Style System
+// Version: 1.0.0
+// Based on: Material Design 3
+// Architecture: Token-based design system
+//
+// Color Tokens: M3 semantic color roles (primary, secondary, tertiary, error, surface)
+// Typography: M3 type scale (display, headline, title, label, body)
+// Elevation: 6-level shadow system with surface tints
+// Shapes: Corner radius tokens for consistent component shapes
+// Spacing: 4px baseline grid
+// Breakpoints: Mobile-first responsive system
+//
+// Usage:
+// - Use CSS custom properties in components: var(--md-sys-color-primary)
+// - Use SCSS mixins for complex patterns: @include elevation(2)
+// - Use utility classes for rapid prototyping: .typescale-headline-large
+//
+// Documentation:
+// See individual partial files for detailed token documentation
+// ============================================

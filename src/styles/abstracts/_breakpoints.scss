@@ -1,0 +1,89 @@
+// =========================================
+// PharmSync Responsive Breakpoints
+// Mobile-First Design
+// =========================================
+
+// Breakpoint Values
+// -----------------------------------------
+$breakpoint-sm: 640px;    // Small devices (large phones)
+$breakpoint-md: 768px;    // Medium devices (tablets)
+$breakpoint-lg: 1024px;   // Large devices (desktops)
+$breakpoint-xl: 1280px;   // Extra large devices
+$breakpoint-2xl: 1536px;  // 2x Extra large devices
+
+// Media Query Mixins
+// -----------------------------------------
+
+// Min-width (mobile-first)
+@mixin sm {
+  @media (min-width: $breakpoint-sm) {
+    @content;
+  }
+}
+
+@mixin md {
+  @media (min-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+@mixin lg {
+  @media (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+@mixin xl {
+  @media (min-width: $breakpoint-xl) {
+    @content;
+  }
+}
+
+@mixin xxl {
+  @media (min-width: $breakpoint-2xl) {
+    @content;
+  }
+}
+
+// Max-width (desktop-first, use sparingly)
+@mixin sm-down {
+  @media (max-width: $breakpoint-sm - 1px) {
+    @content;
+  }
+}
+
+@mixin md-down {
+  @media (max-width: $breakpoint-md - 1px) {
+    @content;
+  }
+}
+
+@mixin lg-down {
+  @media (max-width: $breakpoint-lg - 1px) {
+    @content;
+  }
+}
+
+// Between (range)
+@mixin between($min, $max) {
+  @media (min-width: $min) and (max-width: $max - 1px) {
+    @content;
+  }
+}
+
+// Custom breakpoint
+@mixin custom($breakpoint) {
+  @media (min-width: $breakpoint) {
+    @content;
+  }
+}
+
+// CSS Custom Properties
+// -----------------------------------------
+:root {
+  --breakpoint-sm: #{$breakpoint-sm};
+  --breakpoint-md: #{$breakpoint-md};
+  --breakpoint-lg: #{$breakpoint-lg};
+  --breakpoint-xl: #{$breakpoint-xl};
+  --breakpoint-2xl: #{$breakpoint-2xl};
+}

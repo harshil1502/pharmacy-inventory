@@ -1,0 +1,150 @@
+// ============================================
+// PHARMSYNC - BREAKPOINT SYSTEM
+// Mobile-first responsive breakpoints
+// ============================================
+
+// ---------------------------------------------
+// BREAKPOINT VALUES
+// ---------------------------------------------
+$breakpoint-xs: 375px;   // Mobile small
+$breakpoint-sm: 640px;   // Mobile large
+$breakpoint-md: 768px;   // Tablet
+$breakpoint-lg: 1024px;  // Desktop small
+$breakpoint-xl: 1280px;  // Desktop
+$breakpoint-2xl: 1536px; // Desktop large
+
+// ---------------------------------------------
+// BREAKPOINT MAP
+// ---------------------------------------------
+$breakpoints: (
+  'xs': $breakpoint-xs,
+  'sm': $breakpoint-sm,
+  'md': $breakpoint-md,
+  'lg': $breakpoint-lg,
+  'xl': $breakpoint-xl,
+  '2xl': $breakpoint-2xl
+);
+
+// ---------------------------------------------
+// RESPONSIVE MIXINS
+// ---------------------------------------------
+
+// Min-width (mobile-first)
+@mixin respond-above($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    $value: map-get($breakpoints, $breakpoint);
+    @media screen and (min-width: $value) {
+      @content;
+    }
+  } @else {
+    @warn "Invalid breakpoint: #{$breakpoint}.";
+  }
+}
+
+// Max-width (desktop-first)
+@mixin respond-below($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    $value: map-get($breakpoints, $breakpoint);
+    @media screen and (max-width: $value - 1px) {
+      @content;
+    }
+  } @else {
+    @warn "Invalid breakpoint: #{$breakpoint}.";
+  }
+}
+
+// Between two breakpoints
+@mixin respond-between($lower, $upper) {
+  @if map-has-key($breakpoints, $lower) and map-has-key($breakpoints, $upper) {
+    $lower-value: map-get($breakpoints, $lower);
+    $upper-value: map-get($breakpoints, $upper);
+    @media screen and (min-width: $lower-value) and (max-width: $upper-value - 1px) {
+      @content;
+    }
+  } @else {
+    @warn "Invalid breakpoint: #{$lower} or #{$upper}.";
+  }
+}
+
+// Specific device targeting
+@mixin mobile-only {
+  @media screen and (max-width: $breakpoint-md - 1px) {
+    @content;
+  }
+}
+
+@mixin tablet-only {
+  @media screen and (min-width: $breakpoint-md) and (max-width: $breakpoint-lg - 1px) {
+    @content;
+  }
+}
+
+@mixin desktop-only {
+  @media screen and (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+// Orientation
+@mixin landscape {
+  @media screen and (orientation: landscape) {
+    @content;
+  }
+}
+
+@mixin portrait {
+  @media screen and (orientation: portrait) {
+    @content;
+  }
+}
+
+// Retina/High DPI displays
+@mixin retina {
+  @media
+    screen and (-webkit-min-device-pixel-ratio: 2),
+    screen and (min-resolution: 192dpi),
+    screen and (min-resolution: 2dppx) {
+    @content;
+  }
+}
+
+// ---------------------------------------------
+// CSS CUSTOM PROPERTIES
+// ---------------------------------------------
+:root {
+  --breakpoint-xs: #{$breakpoint-xs};
+  --breakpoint-sm: #{$breakpoint-sm};
+  --breakpoint-md: #{$breakpoint-md};
+  --breakpoint-lg: #{$breakpoint-lg};
+  --breakpoint-xl: #{$breakpoint-xl};
+  --breakpoint-2xl: #{$breakpoint-2xl};
+}
+
+// ---------------------------------------------
+// USAGE EXAMPLES
+// ---------------------------------------------
+
+// Example 1: Mobile-first
+// .component {
+//   padding: 16px;
+//
+//   @include respond-above('md') {
+//     padding: 24px;
+//   }
+// }
+
+// Example 2: Desktop-first
+// .sidebar {
+//   display: none;
+//
+//   @include desktop-only {
+//     display: block;
+//   }
+// }
+
+// Example 3: Specific range
+// .card {
+//   @include respond-between('md', 'lg') {
+//     max-width: 600px;
+//   }
+// }

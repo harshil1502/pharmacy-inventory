@@ -1,0 +1,245 @@
+// =========================================
+// PharmSync Card Components
+// Material Design 3 Cards & Stat Cards
+// =========================================
+
+// Base Card
+// -----------------------------------------
+.card {
+  background-color: var(--md-sys-color-surface-container);
+  border-radius: var(--md-sys-shape-card);
+  padding: $card-padding;
+  @include elevation(1);
+  @include elevation-transition;
+  @include smooth-transition;
+
+  &:hover {
+    @include elevation(2);
+    background-color: var(--md-sys-color-surface-container-high);
+  }
+
+  &--interactive {
+    cursor: pointer;
+
+    &:active {
+      @include elevation(0);
+    }
+  }
+
+  &--flat {
+    @include elevation(0);
+
+    &:hover {
+      @include elevation(1);
+    }
+  }
+}
+
+// Card Header
+// -----------------------------------------
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-4;
+  padding-bottom: $spacing-4;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+
+  &--no-border {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.card__title {
+  @include typography($md-sys-typescale-title-medium);
+  color: var(--md-sys-color-on-surface);
+}
+
+.card__subtitle {
+  @include typography($md-sys-typescale-body-small);
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: $spacing-1;
+}
+
+// Card Content
+// -----------------------------------------
+.card__content {
+  @include typography($md-sys-typescale-body-medium);
+  color: var(--md-sys-color-on-surface);
+}
+
+// Card Footer
+// -----------------------------------------
+.card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $spacing-2;
+  margin-top: $spacing-4;
+  padding-top: $spacing-4;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+// Stat Card
+// -----------------------------------------
+.stat-card {
+  @extend .card;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+  min-height: 120px;
+
+  &__label {
+    @include typography($md-sys-typescale-title-medium);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  &__value {
+    @include typography($md-sys-typescale-headline-large);
+    color: var(--md-sys-color-on-surface);
+    font-weight: $font-weight-bold;
+  }
+
+  &__trend {
+    @include typography($md-sys-typescale-body-small);
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+    margin-top: auto;
+
+    &--positive {
+      color: var(--md-sys-color-status-fresh);
+    }
+
+    &--negative {
+      color: var(--md-sys-color-status-old);
+    }
+
+    &--neutral {
+      color: var(--md-sys-color-on-surface-variant);
+    }
+  }
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    padding: $spacing-2;
+    border-radius: var(--md-sys-shape-corner-medium);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-primary);
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &--compact {
+    min-height: auto;
+    padding: $spacing-4;
+
+    .stat-card__value {
+      @include typography($md-sys-typescale-headline-medium);
+    }
+  }
+}
+
+// Stats Grid
+// -----------------------------------------
+.stats-grid {
+  display: grid;
+  gap: $grid-gap;
+  grid-template-columns: 1fr;
+
+  @include sm {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include lg {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Inventory Card (specific to PharmSync)
+// -----------------------------------------
+.inventory-card {
+  @extend .card;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: $spacing-3;
+  }
+
+  &__name {
+    @include typography($md-sys-typescale-title-medium);
+    color: var(--md-sys-color-on-surface);
+    font-weight: $font-weight-semibold;
+  }
+
+  &__sku {
+    @include typography($md-sys-typescale-body-small);
+    font-family: var(--md-sys-typescale-font-family-mono);
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: $spacing-1;
+  }
+
+  &__meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-3;
+    margin-top: $spacing-3;
+    padding-top: $spacing-3;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  &__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-1;
+  }
+
+  &__meta-label {
+    @include typography($md-sys-typescale-label-small);
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__meta-value {
+    @include typography($md-sys-typescale-body-medium);
+    color: var(--md-sys-color-on-surface);
+    font-weight: $font-weight-medium;
+
+    &--mono {
+      font-family: var(--md-sys-typescale-font-family-mono);
+    }
+  }
+}
+
+// Card Variants
+// -----------------------------------------
+.card--outlined {
+  background-color: transparent;
+  border: 1px solid var(--md-sys-color-outline);
+  @include elevation(0);
+
+  &:hover {
+    border-color: var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-low);
+  }
+}
+
+.card--filled {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+.card--elevated {
+  @include elevation(2);
+
+  &:hover {
+    @include elevation(3);
+  }
+}

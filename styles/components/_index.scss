@@ -1,0 +1,43 @@
+// ============================================
+// PHARMSYNC - COMPONENT STYLES
+// Import component-specific styles here
+// ============================================
+
+// Import components from the new design system
+@import '../../src/styles/components/buttons';
+@import '../../src/styles/components/cards';
+@import '../../src/styles/components/status-badge';
+
+// Future component imports:
+// @import 'forms';
+// @import 'dialog';
+// @import 'input';
+// @import 'navigation';
+// @import 'sidebar';
+// @import 'table';
+// @import 'alerts';
+// @import 'modals';
+// @import 'dropdown';
+// @import 'tooltip';
+// @import 'badge';
+// @import 'tabs';
+// @import 'accordion';
+// @import 'progress';
+
+// ---------------------------------------------
+// COMPONENT INTEGRATION NOTES
+// ---------------------------------------------
+//
+// This file serves as the central hub for all component styles.
+// Components are built using:
+// - Material Design 3 tokens from src/styles/abstracts/
+// - Shoppers Drug Mart color scheme (#E12F29 primary)
+// - BEM naming convention for classes
+// - Theme-aware CSS custom properties
+//
+// When creating new component styles:
+// 1. Create file: src/styles/components/_component-name.scss
+// 2. Import here: @import '../../src/styles/components/component-name';
+// 3. Use M3 design tokens (see abstracts/_colors.scss)
+// 4. Follow existing component patterns for consistency
+//
