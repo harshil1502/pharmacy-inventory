@@ -11,6 +11,7 @@ import { InventoryTable } from '@/components/inventory/inventory-table';
 import { InventoryFilters } from '@/components/inventory/inventory-filters';
 import { RequestDrugDialog } from '@/components/inventory/request-drug-dialog';
 import { formatCurrency, formatNumber } from '@/lib/utils';
+import { fetchAllInventoryItems } from '@/lib/supabase/fetch-all-client';
 
 export default function MyPharmacyPage() {
   const supabase = createClient();
@@ -53,18 +54,9 @@ export default function MyPharmacyPage() {
 
       setLoading(true);
       try {
-        // Fetch only items from user's store
-        const { data, error } = await supabase
-          .from('inventory_items')
-          .select('*, store:stores(*)')
-          .eq('store_id', user.store_id)
-          .order('description');
-
-        if (error) {
-          console.error('Supabase error:', error.message, error.code, error.details);
-          throw error;
-        }
-        setItems(data as InventoryItem[]);
+        // Fetch all items from user's store (paginated past 1000-row limit)
+        const allItems = await fetchAllInventoryItems<InventoryItem>(supabase, user.store_id);
+        setItems(allItems);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('Error fetching inventory:', message);

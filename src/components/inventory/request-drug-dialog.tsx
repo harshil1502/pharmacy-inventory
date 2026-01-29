@@ -65,7 +65,7 @@ export function RequestDrugDialog({
   const [quantity, setQuantity] = useState('');
   const [targetStoreId, setTargetStoreId] = useState(prefilledStoreId);
   const [urgency, setUrgency] = useState<UrgencyLevel>('low');
-  const [driverId, setDriverId] = useState<string>('');
+  const [driverId, setDriverId] = useState<string>('none');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -146,7 +146,7 @@ export function RequestDrugDialog({
           medication_name: medicationName.trim(),
           requested_quantity: parseInt(quantity),
           urgency,
-          driver_id: driverId || null,
+          driver_id: driverId && driverId !== 'none' ? driverId : null,
           message: message.trim() || null,
           requested_by: user.id,
           status: 'pending',
@@ -186,7 +186,7 @@ export function RequestDrugDialog({
     setQuantity('');
     setTargetStoreId('');
     setUrgency('low');
-    setDriverId('');
+    setDriverId('none');
     setMessage('');
     setError('');
   };
@@ -198,13 +198,13 @@ export function RequestDrugDialog({
     setQuantity('');
     setTargetStoreId(prefilledStoreId);
     setUrgency('low');
-    setDriverId('');
+    setDriverId('none');
     setMessage('');
     setError('');
     onOpenChange(false);
   };
 
-  const selectedDriver = drivers.find(d => d.id === driverId);
+  const selectedDriver = driverId !== 'none' ? drivers.find(d => d.id === driverId) : null;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -339,7 +339,7 @@ export function RequestDrugDialog({
                   <SelectValue placeholder={loadingDrivers ? 'Loading drivers...' : 'Select a driver...'} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No driver assigned</SelectItem>
+                  <SelectItem value="none">No driver assigned</SelectItem>
                   {drivers.map((driver) => (
                     <SelectItem key={driver.id} value={driver.id}>
                       <div className="flex items-center space-x-2">

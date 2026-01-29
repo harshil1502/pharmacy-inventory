@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import { StatCard } from '@/components/ui/stat-card';
@@ -6,6 +7,34 @@ import { AgingOverview } from '@/components/dashboard/aging-overview';
 import { ItemList } from '@/components/dashboard/item-list';
 
 export const dynamic = 'force-dynamic';
+
+// Paginate through Supabase's 1000-row server limit
+async function fetchAllInventoryStats(
+  supabase: SupabaseClient,
+  storeId: string
+): Promise<{ total_quantity: number; cost: number; days_aging: number | null }[]> {
+  const PAGE_SIZE = 1000;
+  const all: { total_quantity: number; cost: number; days_aging: number | null }[] = [];
+  let page = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('inventory_items')
+      .select('total_quantity, cost, days_aging')
+      .eq('store_id', storeId)
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+    if (error) {
+      console.error('Error fetching inventory stats page', page, error);
+      break;
+    }
+    all.push(...(data || []));
+    hasMore = (data?.length || 0) === PAGE_SIZE;
+    page++;
+  }
+  return all;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -25,18 +54,15 @@ export default async function DashboardPage() {
   const storeId = profile.store_id;
   const isAdmin = profile.role === 'admin' || profile.role === 'associate';
 
-  // ⚡ PERFORMANCE: Parallel queries instead of sequential
+  // ⚡ PERFORMANCE: Parallel queries
   const [
-    { data: inventoryStats },
+    inventoryStats,
     { count: incomingRequests },
     { count: outgoingRequests },
     { data: topAgingItems },
     { data: lowStockItems },
   ] = await Promise.all([
-    supabase
-      .from('inventory_items')
-      .select('total_quantity, cost, days_aging')
-      .eq('store_id', storeId),
+    fetchAllInventoryStats(supabase, storeId),
     supabase
       .from('medication_requests')
       .select('*', { count: 'exact', head: true })
@@ -64,16 +90,16 @@ export default async function DashboardPage() {
   ]);
 
   // Calculate stats
-  const totalItems = inventoryStats?.length || 0;
-  const totalQuantity = inventoryStats?.reduce((sum, item) => sum + item.total_quantity, 0) || 0;
-  const totalValue = inventoryStats?.reduce((sum, item) => sum + item.cost, 0) || 0;
+  const totalItems = inventoryStats.length;
+  const totalQuantity = inventoryStats.reduce((sum, item) => sum + item.total_quantity, 0);
+  const totalValue = inventoryStats.reduce((sum, item) => sum + item.cost, 0);
 
   // Aging analysis
   const agingData = {
-    fresh: inventoryStats?.filter(i => i.days_aging !== null && i.days_aging <= 30).length || 0,
-    moderate: inventoryStats?.filter(i => i.days_aging !== null && i.days_aging > 30 && i.days_aging <= 90).length || 0,
-    aging: inventoryStats?.filter(i => i.days_aging !== null && i.days_aging > 90 && i.days_aging <= 180).length || 0,
-    old: inventoryStats?.filter(i => i.days_aging !== null && i.days_aging > 180).length || 0,
+    fresh: inventoryStats.filter(i => i.days_aging !== null && i.days_aging <= 30).length,
+    moderate: inventoryStats.filter(i => i.days_aging !== null && i.days_aging > 30 && i.days_aging <= 90).length,
+    aging: inventoryStats.filter(i => i.days_aging !== null && i.days_aging > 90 && i.days_aging <= 180).length,
+    old: inventoryStats.filter(i => i.days_aging !== null && i.days_aging > 180).length,
   };
 
   return (

@@ -11,6 +11,7 @@ import { InventoryTable } from '@/components/inventory/inventory-table';
 import { InventoryFilters } from '@/components/inventory/inventory-filters';
 import { RequestDrugDialog } from '@/components/inventory/request-drug-dialog';
 import { formatCurrency, formatNumber } from '@/lib/utils';
+import { fetchAllInventoryItems } from '@/lib/supabase/fetch-all-client';
 
 export default function InventoryPage() {
   const supabase = createClient();
@@ -48,16 +49,9 @@ export default function InventoryPage() {
     const fetchInventory = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('inventory_items')
-          .select('*, store:stores(*)')
-          .order('description');
-
-        if (error) {
-          console.error('Supabase error:', error.message, error.code, error.details);
-          throw error;
-        }
-        setItems(data as InventoryItem[]);
+        // Fetch all inventory items (paginated past 1000-row limit)
+        const allItems = await fetchAllInventoryItems<InventoryItem>(supabase);
+        setItems(allItems);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('Error fetching inventory:', message);

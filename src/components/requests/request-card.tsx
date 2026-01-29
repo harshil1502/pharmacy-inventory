@@ -113,10 +113,24 @@ export function RequestCard({ request, type, onUpdate }: RequestCardProps) {
         related_request_id: request.id,
       });
 
-      // If accepted and driver assigned, send SMS notification
-      if (responseType === 'accept' && request.driver) {
-        // In production, integrate with Twilio or similar for SMS
-        console.log(`Would send SMS to driver: ${request.driver.phone}`);
+      // If accepted, notify the driver via SMS to pick up medication
+      if (responseType === 'accept') {
+        try {
+          const smsRes = await fetch('/api/notify-driver', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId: request.id }),
+          });
+          const smsData = await smsRes.json();
+          if (smsRes.ok) {
+            console.log(`Driver ${smsData.driverName} notified via SMS`);
+          } else {
+            console.warn('Driver notification failed:', smsData.error);
+          }
+        } catch (smsErr) {
+          console.warn('Could not notify driver:', smsErr);
+          // Don't fail the accept flow if SMS fails
+        }
       }
 
       setShowResponseDialog(false);
@@ -393,20 +407,11 @@ export function RequestCard({ request, type, onUpdate }: RequestCardProps) {
               />
             </div>
 
-            {responseType === 'accept' && request.driver && (
+            {responseType === 'accept' && (
               <div className="rounded-lg bg-green-50 p-3 text-sm">
                 <div className="flex items-center space-x-2 text-green-800">
-                  <Phone className="h-4 w-4" />
-                  <span>Driver will be notified: {request.driver.name} ({request.driver.phone})</span>
-                </div>
-              </div>
-            )}
-
-            {responseType === 'accept' && !request.driver && (
-              <div className="rounded-lg bg-yellow-50 p-3 text-sm">
-                <div className="flex items-center space-x-2 text-yellow-800">
                   <Truck className="h-4 w-4" />
-                  <span>No driver assigned to this request. Driver can be selected by the requesting store.</span>
+                  <span>An available driver will be automatically notified via text to pick up the medication.</span>
                 </div>
               </div>
             )}

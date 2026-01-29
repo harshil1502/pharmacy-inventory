@@ -233,19 +233,33 @@ export async function POST(request: NextRequest) {
       throw uploadError;
     }
 
-    // Delete existing inventory for this store (optional - could also merge)
+    // Delete ALL existing inventory for this store
+    // Supabase may limit rows affected per request, so loop until all are gone
     console.log('[PDF Upload] Deleting existing inventory items...');
     const deleteStartTime = Date.now();
-    const { error: deleteError } = await supabase
-      .from('inventory_items')
-      .delete()
-      .eq('store_id', storeId);
-    
-    if (deleteError) {
-      console.error('[PDF Upload] Error deleting existing inventory:', deleteError);
-      throw deleteError;
+    let totalDeleted = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data: deleted, error: deleteError } = await supabase
+        .from('inventory_items')
+        .delete()
+        .eq('store_id', storeId)
+        .select('id');
+
+      if (deleteError) {
+        console.error('[PDF Upload] Error deleting existing inventory:', deleteError);
+        throw deleteError;
+      }
+
+      const batchDeleted = deleted?.length || 0;
+      totalDeleted += batchDeleted;
+      hasMore = batchDeleted >= 1000; // If we deleted 1000, there might be more
+      if (hasMore) {
+        console.log(`[PDF Upload] Deleted batch of ${batchDeleted}, checking for more...`);
+      }
     }
-    console.log(`[PDF Upload] Deleted existing items in ${((Date.now() - deleteStartTime) / 1000).toFixed(1)}s`);
+    console.log(`[PDF Upload] Deleted ${totalDeleted} existing items in ${((Date.now() - deleteStartTime) / 1000).toFixed(1)}s`);
 
     // Insert new inventory items
     const inventoryItems = parsed.items.map((item) => ({
@@ -305,7 +319,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Parse PDF error:', error);
     return NextResponse.json(
-      { error: 'Failed to process report' },
+      { error: 'Failed to process report', details: error instanceof Error ? error.message : JSON.stringify(error) },
       { status: 500 }
     );
   }

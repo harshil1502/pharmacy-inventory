@@ -17,7 +17,7 @@ export function parseInventoryReport(text: string): ParseResult {
   let storeCode = '';
   let reportDate = '';
   
-  for (const line of lines.slice(0, 10)) {
+  for (const line of lines.slice(0, 5)) {
     // Match store name and code pattern like "KRUNAL PATEL APOTHECARY LTD (1021)"
     const storeMatch = line.match(/([A-Z][A-Z\s]+(?:LTD|INC|CORP)?)\s*\((\d+)\)/i);
     if (storeMatch) {
@@ -25,9 +25,9 @@ export function parseInventoryReport(text: string): ParseResult {
       storeCode = storeMatch[2];
     }
     
-    // Match date pattern like "Dec 12/25"
-    const dateMatch = line.match(/([A-Z][a-z]{2})\s+(\d{1,2})\/(\d{2})/i);
-    if (dateMatch) {
+    // Match date at start of line like "Jan 28/26"
+    const dateMatch = line.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\/(\d{2})/i);
+    if (dateMatch && !reportDate) {
       const monthMap: Record<string, string> = {
         'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
         'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
@@ -149,8 +149,8 @@ export function parseInventoryReportEnhanced(text: string): ParseResult {
   let storeCode = '';
   let reportDate = '';
   
-  // Parse header
-  for (let i = 0; i < Math.min(lines.length, 20); i++) {
+  // Parse header — only check first 5 lines for date/store info
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
     const line = lines[i];
     
     const storeMatch = line.match(/([A-Z][A-Z\s]+(?:LTD|INC|CORP|PHARMACY)?)\s*\((\d+)\)/i);
@@ -159,8 +159,9 @@ export function parseInventoryReportEnhanced(text: string): ParseResult {
       storeCode = storeMatch[2];
     }
     
-    const dateMatch = line.match(/([A-Z][a-z]{2})\s+(\d{1,2})\/(\d{2})/i);
-    if (dateMatch) {
+    // Only match date at the start of a line (e.g. "Jan 28/26  13:53")
+    const dateMatch = line.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\/(\d{2})/i);
+    if (dateMatch && !reportDate) {
       const monthMap: Record<string, string> = {
         'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
         'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',

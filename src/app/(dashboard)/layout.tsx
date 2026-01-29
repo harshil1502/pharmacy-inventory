@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAppStore } from '@/lib/store';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { UserProfile, Store, Notification } from '@/types';
 import { Loader2 } from 'lucide-react';
+
+// Use useLayoutEffect on client, useEffect on server
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // Create supabase client once outside component
 const supabase = createClient();
@@ -99,6 +102,17 @@ export default function DashboardLayout({
     };
   }, []);
 
+  // Initialize sidebar state based on screen size and localStorage
+  useIsomorphicLayoutEffect(() => {
+    const stored = localStorage.getItem('pharmsync-sidebar');
+    if (stored) {
+      useAppStore.getState().setSidebarOpen(stored === 'open');
+    } else {
+      // Default: open on desktop (>= 1024px), closed on mobile
+      useAppStore.getState().setSidebarOpen(window.innerWidth >= 1024);
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -117,9 +131,9 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
-      <div className="lg:pl-72">
+      <div className="transition-all duration-200">
         <Header />
-        <main className="p-6 lg:p-8">
+        <main className="p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>

@@ -81,8 +81,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   resetFilters: () => set({ filters: defaultFilters }),
   
   // UI
-  sidebarOpen: true,
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  sidebarOpen: false,
+  setSidebarOpen: (open) => {
+    set({ sidebarOpen: open });
+    // Persist preference to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pharmsync-sidebar', open ? 'open' : 'closed');
+    }
+  },
   
   // Loading
   isLoading: false,

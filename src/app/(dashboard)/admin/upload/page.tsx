@@ -19,14 +19,14 @@ export default async function AdminUploadPage() {
     .eq('id', user.id)
     .single();
 
-  if (!profile || (profile.role !== 'admin' && profile.role !== 'manager')) {
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'associate')) {
     redirect('/dashboard');
   }
 
-  // Get stores (admins see all, managers see only their store)
+  // Get stores (associates see all, admins see only their store)
   let storesQuery = supabase.from('stores').select('*').order('name');
   
-  if (profile.role === 'manager') {
+  if (profile.role === 'admin') {
     storesQuery = storesQuery.eq('id', profile.store_id);
   }
 
@@ -43,7 +43,7 @@ export default async function AdminUploadPage() {
     .order('created_at', { ascending: false })
     .limit(10);
 
-  if (profile.role === 'manager') {
+  if (profile.role === 'admin') {
     uploadsQuery = uploadsQuery.eq('store_id', profile.store_id);
   }
 

@@ -95,7 +95,8 @@ export function PDFUpload({ stores }: PDFUploadProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Upload failed');
+        const detail = data.details ? `\n\nDetails: ${data.details}` : '';
+        throw new Error((data.error || 'Upload failed') + detail);
       }
 
       setResult({

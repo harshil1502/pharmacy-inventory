@@ -350,3 +350,28 @@ export function canBroadcast(role: UserRole): boolean {
 export function receivesSMS(role: UserRole): boolean {
   return role === 'driver';
 }
+
+// Request log type (for activity tracking)
+export type RequestLogType = 'outgoing' | 'incoming';
+
+export interface RequestLog {
+  id: string;
+  log_type: RequestLogType;
+  store_id: string;
+  store_name: string | null;
+  store_code: string | null;
+  user_id: string | null;
+  user_name: string | null;
+  user_email: string | null;
+  other_store_id: string | null;
+  other_store_name: string | null;
+  other_store_code: string | null;
+  medication_name: string;
+  din_number: string | null;
+  quantity: number;
+  action: string;
+  request_id: string | null;
+  action_at: string;
+  expires_at: string;
+  created_at: string;
+}
