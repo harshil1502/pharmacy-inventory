@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Edit, User, Shield, Store as StoreIcon } from 'lucide-react';
+import { Edit, User, Shield, Store as StoreIcon, Plus, Copy, Check, Key } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAppStore } from '@/lib/store';
 import { UserProfile, Store, UserRole, canManageRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -22,8 +23,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { cn, formatDateTime } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export default function AdminUsersPage() {
   const supabase = createClient();
@@ -31,7 +34,9 @@ export default function AdminUsersPage() {
   
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDialog, setShowDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showCredentialsDialog, setShowCredentialsDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole>('regular');
   const [selectedStoreId, setSelectedStoreId] = useState<string>('');
@@ -39,6 +44,14 @@ export default function AdminUsersPage() {
   const [error, setError] = useState('');
   const [filterStore, setFilterStore] = useState<string>('all');
   const [filterRole, setFilterRole] = useState<string>('all');
+  
+  // Create user form state
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserRole, setNewUserRole] = useState<UserRole>('regular');
+  const [newUserStoreId, setNewUserStoreId] = useState<string>('');
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [copiedPassword, setCopiedPassword] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -71,10 +84,19 @@ export default function AdminUsersPage() {
     setSelectedRole(user.role);
     setSelectedStoreId(user.store_id || '');
     setError('');
-    setShowDialog(true);
+    setShowEditDialog(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const openCreateDialog = () => {
+    setNewUserEmail('');
+    setNewUserName('');
+    setNewUserRole('regular');
+    setNewUserStoreId(currentUser?.role === 'admin' ? currentUser.store_id || '' : '');
+    setError('');
+    setShowCreateDialog(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -93,13 +115,74 @@ export default function AdminUsersPage() {
 
       if (error) throw error;
 
-      setShowDialog(false);
+      setShowEditDialog(false);
       fetchUsers();
+      toast.success('User updated successfully');
     } catch (err: any) {
       console.error('Error updating user:', err);
       setError(err.message || 'Failed to update user');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!newUserEmail || !newUserName) {
+      setError('Email and name are required');
+      return;
+    }
+
+    // Admins can only create users for their store
+    if (currentUser?.role === 'admin' && newUserStoreId !== currentUser.store_id) {
+      setError('You can only create users for your store');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const response = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: newUserEmail,
+          fullName: newUserName,
+          role: newUserRole,
+          storeId: newUserStoreId || null,
+          createdBy: currentUser?.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create user');
+      }
+
+      setShowCreateDialog(false);
+      setCreatedCredentials({
+        email: data.user.email,
+        password: data.tempPassword,
+      });
+      setShowCredentialsDialog(true);
+      fetchUsers();
+      toast.success('User created successfully');
+    } catch (err: any) {
+      console.error('Error creating user:', err);
+      setError(err.message || 'Failed to create user');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const copyPassword = () => {
+    if (createdCredentials) {
+      navigator.clipboard.writeText(createdCredentials.password);
+      setCopiedPassword(true);
+      setTimeout(() => setCopiedPassword(false), 2000);
     }
   };
 
@@ -120,10 +203,18 @@ export default function AdminUsersPage() {
 
   // Filter users
   const filteredUsers = users.filter(user => {
-    if (filterStore !== 'all' && user.store_id !== filterStore) return false;
+    if (filterStore !== 'all') {
+      if (filterStore === 'unassigned' && user.store_id) return false;
+      if (filterStore !== 'unassigned' && user.store_id !== filterStore) return false;
+    }
     if (filterRole !== 'all' && user.role !== filterRole) return false;
     return true;
   });
+
+  // Get available stores for user (admins only see their store)
+  const availableStores = currentUser?.role === 'associate' 
+    ? stores 
+    : stores.filter(s => s.id === currentUser?.store_id);
 
   if (currentUser?.role !== 'admin' && currentUser?.role !== 'associate') {
     return (
@@ -136,11 +227,17 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Manage Users</h1>
-        <p className="text-gray-600 mt-1">
-          Assign roles and stores to users
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Manage Users</h1>
+          <p className="text-gray-600 mt-1">
+            Create and manage user accounts
+          </p>
+        </div>
+        <Button onClick={openCreateDialog}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create User
+        </Button>
       </div>
 
       {/* Filters */}
@@ -261,14 +358,14 @@ export default function AdminUsersPage() {
       )}
 
       {/* Edit Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
           </DialogHeader>
 
           {editingUser && (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleEdit}>
               <div className="space-y-4 py-4">
                 {/* User Info (Read-only) */}
                 <div className="rounded-lg bg-gray-50 p-4">
@@ -334,7 +431,7 @@ export default function AdminUsersPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setShowDialog(false)}
+                  onClick={() => setShowEditDialog(false)}
                   disabled={saving}
                 >
                   Cancel
@@ -345,6 +442,175 @@ export default function AdminUsersPage() {
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+            <DialogDescription>
+              Create a new user account. A temporary password will be generated.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreate}>
+            <div className="space-y-4 py-4">
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="user@example.com"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Full Name */}
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name *</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="John Doe"
+                  value={newUserName}
+                  onChange={(e) => setNewUserName(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <Label>Role</Label>
+                <Select value={newUserRole} onValueChange={(v) => setNewUserRole(v as UserRole)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentUser?.role === 'associate' && (
+                      <SelectItem value="associate">Associate</SelectItem>
+                    )}
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="regular">Regular User</SelectItem>
+                    <SelectItem value="driver">Driver</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  {newUserRole === 'associate' && 'Maximum access - multi-store oversight and broadcasts'}
+                  {newUserRole === 'admin' && 'Store-level management, inventory CRUD, user setup'}
+                  {newUserRole === 'regular' && 'Day-to-day operations, requests, personal tasks'}
+                  {newUserRole === 'driver' && 'SMS notifications only for pickup alerts'}
+                </p>
+              </div>
+
+              {/* Store Assignment */}
+              <div className="space-y-2">
+                <Label>Assigned Store</Label>
+                <Select 
+                  value={newUserStoreId || 'none'} 
+                  onValueChange={(v) => setNewUserStoreId(v === 'none' ? '' : v)}
+                  disabled={currentUser?.role === 'admin'}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a store" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentUser?.role === 'associate' && (
+                      <SelectItem value="none">No Store</SelectItem>
+                    )}
+                    {availableStores.map((store) => (
+                      <SelectItem key={store.id} value={store.id}>
+                        {store.name} ({store.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {currentUser?.role === 'admin' && (
+                  <p className="text-xs text-gray-500">
+                    Admins can only create users for their own store
+                  </p>
+                )}
+              </div>
+
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</p>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCreateDialog(false)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Creating...' : 'Create User'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credentials Dialog */}
+      <Dialog open={showCredentialsDialog} onOpenChange={setShowCredentialsDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-green-600" />
+              User Created Successfully
+            </DialogTitle>
+            <DialogDescription>
+              Share these credentials with the user. They should change their password after first login.
+            </DialogDescription>
+          </DialogHeader>
+
+          {createdCredentials && (
+            <div className="space-y-4 py-4">
+              <div className="rounded-lg bg-gray-50 p-4 space-y-3">
+                <div>
+                  <Label className="text-xs text-gray-500">Email</Label>
+                  <p className="font-mono text-sm">{createdCredentials.email}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">Temporary Password</Label>
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono text-sm bg-yellow-100 px-2 py-1 rounded">
+                      {createdCredentials.password}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={copyPassword}
+                    >
+                      {copiedPassword ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-orange-600">
+                ⚠️ This password will not be shown again. Make sure to copy it now.
+              </p>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button onClick={() => setShowCredentialsDialog(false)}>
+              Done
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -19,6 +19,7 @@ import {
   Building2,
   FileText,
   ChevronLeft,
+  UserCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
@@ -39,6 +40,7 @@ const navItems: NavItem[] = [
   { title: 'Tasks', href: '/tasks', icon: CheckSquare, roles: ['associate', 'admin', 'regular'] },
   { title: 'Messages', href: '/messages', icon: MessageSquare, roles: ['associate', 'admin', 'regular'] },
   { title: 'Schedule', href: '/schedules', icon: Calendar },
+  { title: 'My Profile', href: '/profile', icon: UserCircle },
   { title: 'Upload Reports', href: '/admin/upload', icon: Upload, roles: ['associate', 'admin'] },
   { title: 'Manage Stores', href: '/admin/stores', icon: Store, roles: ['associate'] },
   { title: 'Manage Users', href: '/admin/users', icon: Users, roles: ['associate', 'admin'] },
