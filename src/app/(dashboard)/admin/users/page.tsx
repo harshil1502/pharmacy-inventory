@@ -50,7 +50,7 @@ export default function AdminUsersPage() {
   const [newUserName, setNewUserName] = useState('');
   const [newUserRole, setNewUserRole] = useState<UserRole>('regular');
   const [newUserStoreId, setNewUserStoreId] = useState<string>('');
-  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string; emailSent: boolean } | null>(null);
   const [copiedPassword, setCopiedPassword] = useState(false);
 
   const fetchUsers = async () => {
@@ -166,10 +166,13 @@ export default function AdminUsersPage() {
       setCreatedCredentials({
         email: data.user.email,
         password: data.tempPassword,
+        emailSent: data.emailSent,
       });
       setShowCredentialsDialog(true);
       fetchUsers();
-      toast.success('User created successfully');
+      toast.success(data.emailSent 
+        ? 'User created and welcome email sent!' 
+        : 'User created (email not sent)');
     } catch (err: any) {
       console.error('Error creating user:', err);
       setError(err.message || 'Failed to create user');
@@ -567,12 +570,26 @@ export default function AdminUsersPage() {
               User Created Successfully
             </DialogTitle>
             <DialogDescription>
-              Share these credentials with the user. They should change their password after first login.
+              {createdCredentials?.emailSent 
+                ? 'A welcome email with login credentials has been sent to the user.'
+                : 'Share these credentials with the user. They will be required to change their password on first login.'}
             </DialogDescription>
           </DialogHeader>
 
           {createdCredentials && (
             <div className="space-y-4 py-4">
+              {/* Email Status */}
+              {createdCredentials.emailSent ? (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                  <Check className="h-4 w-4" />
+                  Welcome email sent to {createdCredentials.email}
+                </div>
+              ) : (
+                <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg text-sm">
+                  ⚠️ Email could not be sent. Please share credentials manually.
+                </div>
+              )}
+              
               <div className="rounded-lg bg-gray-50 p-4 space-y-3">
                 <div>
                   <Label className="text-xs text-gray-500">Email</Label>
@@ -600,8 +617,8 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
-              <p className="text-xs text-orange-600">
-                ⚠️ This password will not be shown again. Make sure to copy it now.
+              <p className="text-xs text-gray-500">
+                💡 The user will be required to change their password when they first log in.
               </p>
             </div>
           )}

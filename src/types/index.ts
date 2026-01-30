@@ -43,6 +43,7 @@ export interface UserProfile {
   notification_preference: NotificationMethod;
   task_reminder_preference: NotificationMethod;
   created_by: string | null;
+  must_change_password: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
-  // Admin client with service role for user creation (created inside function to avoid build-time errors)
+  // Admin client with service role for user creation
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+
   try {
     const body = await request.json();
     const { email, fullName, role, storeId, createdBy } = body;
@@ -28,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate a temporary password (user will reset)
+    // Generate a temporary password
     const tempPassword = `PharmSync${Math.random().toString(36).slice(-8)}!`;
 
     // Create auth user
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update the profile (trigger should have created it)
+    // Update the profile with must_change_password flag
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
         role,
         store_id: storeId || null,
         created_by: createdBy,
+        must_change_password: true, // Force password change on first login
       })
       .eq('id', authData.user.id)
       .select()
@@ -75,6 +78,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Send welcome email with credentials
+    const loginUrl = process.env.NEXT_PUBLIC_APP_URL 
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/login`
+      : 'https://pharmsync.vercel.app/login';
+
+    const emailResult = await sendWelcomeEmail({
+      to: email,
+      fullName,
+      tempPassword,
+      loginUrl,
+    });
+
+    if (!emailResult.success) {
+      console.warn('Failed to send welcome email:', emailResult.error);
+      // Don't fail user creation if email fails - just log it
+    }
+
     return NextResponse.json({
       success: true,
       user: {
@@ -84,7 +104,8 @@ export async function POST(request: NextRequest) {
         role,
         storeId,
       },
-      tempPassword, // Return so admin can share it
+      tempPassword, // Still return for admin to see/copy if email fails
+      emailSent: emailResult.success,
     });
 
   } catch (error) {

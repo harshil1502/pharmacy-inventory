@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAppStore } from '@/lib/store';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
+import { ChangePasswordModal } from '@/components/auth/change-password-modal';
 import { UserProfile, Store, Notification } from '@/types';
 import { Loader2 } from 'lucide-react';
 
@@ -21,6 +22,8 @@ export default function DashboardLayout({
 }) {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [userId, setUserId] = useState<string>('');
 
   useEffect(() => {
     let mounted = true;
@@ -35,6 +38,8 @@ export default function DashboardLayout({
           }
           return;
         }
+
+        setUserId(authUser.id);
 
         // Get user profile with store
         const { data: profile } = await supabase
@@ -52,6 +57,11 @@ export default function DashboardLayout({
           useAppStore.getState().setUser(profile as UserProfile);
           if (profile.store) {
             useAppStore.getState().setCurrentStore(profile.store as Store);
+          }
+          
+          // Check if user must change password
+          if (profile.must_change_password) {
+            setShowPasswordChange(true);
           }
         }
 
@@ -102,6 +112,12 @@ export default function DashboardLayout({
     };
   }, []);
 
+  const handlePasswordChangeComplete = () => {
+    setShowPasswordChange(false);
+    // Reload user data to get updated profile
+    window.location.reload();
+  };
+
   // Initialize sidebar state based on screen size and localStorage
   useIsomorphicLayoutEffect(() => {
     const stored = localStorage.getItem('pharmsync-sidebar');
@@ -137,6 +153,13 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+      
+      {/* Password Change Modal - Required for first login */}
+      <ChangePasswordModal
+        open={showPasswordChange}
+        userId={userId}
+        onComplete={handlePasswordChangeComplete}
+      />
     </div>
   );
 }
