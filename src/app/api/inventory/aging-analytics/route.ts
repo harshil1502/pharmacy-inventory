@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         total_quantity,
         cost,
         days_aging,
-        store:store_id(name)
+        store:stores(name)
       `)
       .gt('total_quantity', 0);
 
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
           if (!storeSummaryMap.has(item.store_id)) {
             storeSummaryMap.set(item.store_id, {
               storeId: item.store_id,
-              storeName: item.store?.name || 'Unknown',
+              storeName: (item as any).store?.name || 'Unknown',
               totalAgingValue: 0,
               totalAgingItems: 0,
               criticalItems: 0,

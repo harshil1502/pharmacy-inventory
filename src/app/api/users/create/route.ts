@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { sendWelcomeEmail } from '@/lib/email';
+// import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   // Admin client with service role for user creation
@@ -83,17 +83,19 @@ export async function POST(request: NextRequest) {
       ? `${process.env.NEXT_PUBLIC_APP_URL}/login`
       : 'https://pharmsync.vercel.app/login';
 
-    const emailResult = await sendWelcomeEmail({
-      to: email,
-      fullName,
-      tempPassword,
-      loginUrl,
-    });
+    // Temporarily disable email sending
+    // const emailResult = await sendWelcomeEmail({
+    //   to: email,
+    //   fullName,
+    //   tempPassword,
+    //   loginUrl,
+    // });
 
-    if (!emailResult.success) {
-      console.warn('Failed to send welcome email:', emailResult.error);
-      // Don't fail user creation if email fails - just log it
-    }
+    // if (!emailResult.success) {
+    //   console.warn('Failed to send welcome email:', emailResult.error);
+    //   // Don't fail user creation if email fails - just log it
+    // }
+    const emailResult = { success: false, error: 'Email disabled temporarily' };
 
     return NextResponse.json({
       success: true,

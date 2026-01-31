@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         total_quantity,
         cost,
         days_aging,
-        store:store_id(name)
+        store:stores(name)
       `)
       .gte('days_aging', minAgingDays)
       .gt('total_quantity', 0)
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
           store_id,
           total_quantity,
           days_aging,
-          store:store_id(name)
+          store:stores(name)
         `)
         .eq('din_number', agingItem.din_number)
         .neq('store_id', agingItem.store_id)
@@ -103,12 +103,12 @@ export async function GET(request: NextRequest) {
           din_number: agingItem.din_number,
           medication_name: agingItem.description,
           aging_store_id: agingItem.store_id,
-          aging_store_name: agingItem.store?.name || '',
+          aging_store_name: (agingItem as any).store?.name || '',
           aging_days: agingItem.days_aging || 0,
           aging_quantity: agingItem.total_quantity,
           aging_cost: agingItem.cost,
           needed_store_id: needingStore.store_id,
-          needed_store_name: needingStore.store?.name || '',
+          needed_store_name: (needingStore as any).store?.name || '',
           needed_quantity: needingStore.total_quantity,
           transferable_quantity: transferableQty,
           savings_potential: savingsPotential
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
           din_number: agingItem.din_number,
           medication_name: agingItem.description,
           aging_store_id: agingItem.store_id,
-          aging_store_name: agingItem.store?.name || '',
+          aging_store_name: (agingItem as any).store?.name || '',
           aging_days: agingItem.days_aging || 0,
           aging_quantity: agingItem.total_quantity,
           aging_cost: agingItem.cost,
