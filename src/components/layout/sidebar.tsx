@@ -20,6 +20,8 @@ import {
   FileText,
   ChevronLeft,
   UserCircle,
+  TrendingDown,
+  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
@@ -36,6 +38,8 @@ interface NavItem {
 const navItems: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { title: 'All Inventory', href: '/inventory', icon: Package, roles: ['associate', 'admin', 'regular'] },
+  { title: 'Aging Matcher', href: '/inventory/aging-matcher', icon: TrendingDown, roles: ['associate', 'admin'] },
+  { title: 'Aging Analytics', href: '/inventory/aging-analytics', icon: Activity, roles: ['associate', 'admin'] },
   { title: 'Requests', href: '/requests', icon: Send, roles: ['associate', 'admin', 'regular'] },
   { title: 'Tasks', href: '/tasks', icon: CheckSquare, roles: ['associate', 'admin', 'regular'] },
   { title: 'Messages', href: '/messages', icon: MessageSquare, roles: ['associate', 'admin', 'regular'] },
