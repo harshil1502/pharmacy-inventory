@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
 
 interface AgingMatch {
   din_number: string;
@@ -19,8 +18,7 @@ interface AgingMatch {
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = await createClient(cookieStore);
+    const supabase = await createClient();
 
     // Check auth
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -54,7 +52,7 @@ export async function GET(request: NextRequest) {
         total_quantity,
         cost,
         days_aging,
-        store:stores(name)
+        store:store_id(name)
       `)
       .gte('days_aging', minAgingDays)
       .gt('total_quantity', 0)
@@ -78,7 +76,7 @@ export async function GET(request: NextRequest) {
           store_id,
           total_quantity,
           days_aging,
-          store:stores(name)
+          store:store_id(name)
         `)
         .eq('din_number', agingItem.din_number)
         .neq('store_id', agingItem.store_id)

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast';
 import { RequestDrugDialog } from '@/components/inventory/request-drug-dialog';
 import { useAppStore } from '@/lib/store';
 
@@ -38,7 +37,6 @@ export default function AgingMatcherPage() {
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState<AgingMatch | null>(null);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
-  const { toast } = useToast();
   const { stores } = useAppStore();
 
   useEffect(() => {
@@ -59,11 +57,6 @@ export default function AgingMatcherPage() {
       setSummary(data.summary);
     } catch (error) {
       console.error('Error fetching matches:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load aging matches',
-        variant: 'destructive',
-      });
     } finally {
       setLoading(false);
     }

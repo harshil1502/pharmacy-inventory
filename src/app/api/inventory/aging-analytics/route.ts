@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
 
 interface AgingBracket {
   range: string;
@@ -24,8 +23,7 @@ interface StoreAgingSummary {
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = await createClient(cookieStore);
+    const supabase = await createClient();
 
     // Check auth
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -55,7 +53,7 @@ export async function GET(request: NextRequest) {
         total_quantity,
         cost,
         days_aging,
-        store:stores(name)
+        store:store_id(name)
       `)
       .gt('total_quantity', 0);
 

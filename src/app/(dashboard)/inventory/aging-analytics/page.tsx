@@ -272,8 +272,8 @@ export default function AgingAnalyticsPage() {
                 <XAxis dataKey="range" angle={-45} textAnchor="end" height={80} />
                 <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                 <Tooltip 
-                  formatter={(value: number) => formatCurrency(value)}
-                  labelFormatter={(label) => `Age: ${label}`}
+                  formatter={(value: any) => formatCurrency(Number(value) || 0)}
+                  labelFormatter={(label: any) => `Age: ${label}`}
                 />
                 <Bar 
                   dataKey="totalValue" 
