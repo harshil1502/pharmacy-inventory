@@ -135,36 +135,42 @@ export async function POST(request: NextRequest) {
     const pdfStoreCode = parsed.storeCode;
     console.log(`[PDF Upload] PDF Store Code: ${pdfStoreCode}, Store Name: ${parsed.storeName}`);
 
-    // Validate store code exists in database
-    const { data: storeFromPDF, error: storeError } = await supabase
-      .from('stores')
-      .select('id, name, code')
-      .eq('code', pdfStoreCode)
-      .single();
+    // If PDF has a recognizable store code (not the default "0000"), validate it
+    if (pdfStoreCode && pdfStoreCode !== '0000') {
+      // Validate store code exists in database
+      const { data: storeFromPDF, error: storeError } = await supabase
+        .from('stores')
+        .select('id, name, code')
+        .eq('code', pdfStoreCode)
+        .single();
 
-    if (storeError || !storeFromPDF) {
-      console.error(`[PDF Upload] Unknown store code in PDF: ${pdfStoreCode}`);
-      return NextResponse.json(
-        {
-          error: `PDF contains unknown store code "${pdfStoreCode}". Please verify the PDF is correct.`,
-          pdfStoreCode,
-        },
-        { status: 400 }
-      );
-    }
+      if (storeError || !storeFromPDF) {
+        console.error(`[PDF Upload] Unknown store code in PDF: ${pdfStoreCode}`);
+        return NextResponse.json(
+          {
+            error: `PDF contains unknown store code "${pdfStoreCode}". Please verify the PDF is correct.`,
+            pdfStoreCode,
+          },
+          { status: 400 }
+        );
+      }
 
-    // Validate PDF store matches selected store
-    if (storeFromPDF.id !== storeId) {
-      console.error(`[PDF Upload] Store mismatch - PDF: ${pdfStoreCode} (${storeFromPDF.id}), Selected: ${storeId}`);
-      return NextResponse.json(
-        {
-          error: `PDF mismatch: This report is for "${storeFromPDF.name}" (${pdfStoreCode}) but you selected a different store. Please select the correct store and try again.`,
-          pdfStoreCode,
-          pdfStoreName: storeFromPDF.name,
-          selectedStoreId: storeId,
-        },
-        { status: 400 }
-      );
+      // Validate PDF store matches selected store
+      if (storeFromPDF.id !== storeId) {
+        console.error(`[PDF Upload] Store mismatch - PDF: ${pdfStoreCode} (${storeFromPDF.id}), Selected: ${storeId}`);
+        return NextResponse.json(
+          {
+            error: `PDF mismatch: This report is for "${storeFromPDF.name}" (${pdfStoreCode}) but you selected a different store. Please select the correct store and try again.`,
+            pdfStoreCode,
+            pdfStoreName: storeFromPDF.name,
+            selectedStoreId: storeId,
+          },
+          { status: 400 }
+        );
+      }
+    } else {
+      // PDF doesn't have a recognizable store code - trust the user's selection
+      console.log(`[PDF Upload] No store code in PDF, using user-selected store: ${storeId}`);
     }
 
     // Fetch uploader's profile to check role and store_id
