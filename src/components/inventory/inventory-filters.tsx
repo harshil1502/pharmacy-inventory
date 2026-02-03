@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, X, Filter } from 'lucide-react';
+import { Search, X, Filter, Copy } from 'lucide-react';
 import { Store, InventoryFilters as FilterType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 
 interface InventoryFiltersProps {
   filters: FilterType;
@@ -20,6 +21,8 @@ interface InventoryFiltersProps {
   onReset: () => void;
   stores?: Store[];
   showStoreFilter?: boolean;
+  duplicateCount?: number;
+  showDuplicatesFilter?: boolean;
 }
 
 export function InventoryFilters({
@@ -28,6 +31,8 @@ export function InventoryFilters({
   onReset,
   stores = [],
   showStoreFilter = false,
+  duplicateCount = 0,
+  showDuplicatesFilter = true,
 }: InventoryFiltersProps) {
   const hasActiveFilters =
     filters.search ||
@@ -37,7 +42,8 @@ export function InventoryFilters({
     filters.max_days_aging !== null ||
     filters.min_quantity !== null ||
     filters.max_quantity !== null ||
-    filters.store_id !== null;
+    filters.store_id !== null ||
+    filters.show_duplicates_only;
 
   const activeFilterCount = [
     filters.search,
@@ -46,6 +52,7 @@ export function InventoryFilters({
     filters.min_days_aging !== null || filters.max_days_aging !== null,
     filters.min_quantity !== null || filters.max_quantity !== null,
     filters.store_id !== null,
+    filters.show_duplicates_only,
   ].filter(Boolean).length;
 
   return (
@@ -210,6 +217,34 @@ export function InventoryFilters({
             />
           </div>
         </div>
+
+        {/* Duplicates Filter */}
+        {showDuplicatesFilter && (
+          <div className="space-y-1.5">
+            <Label className="text-xs text-gray-500">Duplicates</Label>
+            <div className="flex items-center space-x-2 h-10 px-3 py-2 border rounded-md bg-white">
+              <Switch
+                id="show-duplicates"
+                checked={filters.show_duplicates_only}
+                onCheckedChange={(checked) =>
+                  onFiltersChange({ show_duplicates_only: checked })
+                }
+              />
+              <Label
+                htmlFor="show-duplicates"
+                className="text-sm font-normal cursor-pointer flex items-center gap-2"
+              >
+                <Copy className="h-4 w-4 text-amber-600" />
+                Show Only
+                {duplicateCount > 0 && (
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                    {duplicateCount}
+                  </Badge>
+                )}
+              </Label>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

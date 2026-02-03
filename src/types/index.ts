@@ -276,6 +276,7 @@ export interface InventoryFilters {
   min_quantity: number | null;
   max_quantity: number | null;
   store_id: string | null;
+  show_duplicates_only: boolean;
 }
 
 export interface SortOption {

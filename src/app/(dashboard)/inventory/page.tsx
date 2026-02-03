@@ -12,6 +12,7 @@ import { InventoryFilters } from '@/components/inventory/inventory-filters';
 import { RequestDrugDialog } from '@/components/inventory/request-drug-dialog';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import { fetchAllInventoryItems } from '@/lib/supabase/fetch-all-client';
+import { getDuplicateKey, getTrueDuplicateKeys } from '@/lib/utils/parse-drug';
 
 export default function InventoryPage() {
   const supabase = createClient();
@@ -35,6 +36,7 @@ export default function InventoryPage() {
     min_quantity: null,
     max_quantity: null,
     store_id: null,
+    show_duplicates_only: false,
   });
   
   const [sort, setSort] = useState<SortOption>({
@@ -83,9 +85,37 @@ export default function InventoryPage() {
     };
   }, [supabase]);
 
+  // Calculate duplicate keys for inventory (respects store filter)
+  const duplicateInfo = useMemo(() => {
+    // If store is filtered, only check duplicates within that store
+    const itemsToCheck = filters.store_id 
+      ? items.filter(item => item.store_id === filters.store_id)
+      : items;
+    const duplicateKeys = getTrueDuplicateKeys(itemsToCheck);
+    const duplicateItems = itemsToCheck.filter((item) => 
+      duplicateKeys.has(getDuplicateKey(item.description))
+    );
+    return {
+      keys: duplicateKeys,
+      count: duplicateItems.length,
+    };
+  }, [items, filters.store_id]);
+
   // Filter and sort items
   const filteredItems = useMemo(() => {
     let result = [...items];
+
+    // Apply store filter first (affects duplicate detection)
+    if (filters.store_id) {
+      result = result.filter((item) => item.store_id === filters.store_id);
+    }
+
+    // Apply duplicates filter (if enabled)
+    if (filters.show_duplicates_only) {
+      result = result.filter((item) =>
+        duplicateInfo.keys.has(getDuplicateKey(item.description))
+      );
+    }
 
     // Apply search filter
     if (filters.search) {
@@ -96,11 +126,6 @@ export default function InventoryPage() {
           item.item_code.toLowerCase().includes(search) ||
           item.manufacturer_code.toLowerCase().includes(search)
       );
-    }
-
-    // Apply store filter
-    if (filters.store_id) {
-      result = result.filter((item) => item.store_id === filters.store_id);
     }
 
     // Apply marketing status filter
@@ -139,26 +164,40 @@ export default function InventoryPage() {
       result = result.filter((item) => item.total_quantity <= filters.max_quantity!);
     }
 
-    // Apply sort
-    result.sort((a, b) => {
-      const aVal = a[sort.field];
-      const bVal = b[sort.field];
+    // Apply sort - when showing duplicates, group by duplicate key first
+    if (filters.show_duplicates_only) {
+      result.sort((a, b) => {
+        const keyA = getDuplicateKey(a.description);
+        const keyB = getDuplicateKey(b.description);
+        
+        // First sort by duplicate key to group similar drugs together
+        const keyComparison = keyA.localeCompare(keyB);
+        if (keyComparison !== 0) return keyComparison;
+        
+        // Then by manufacturer code to show different MFRs
+        return a.manufacturer_code.localeCompare(b.manufacturer_code);
+      });
+    } else {
+      result.sort((a, b) => {
+        const aVal = a[sort.field];
+        const bVal = b[sort.field];
 
-      if (aVal === null || aVal === undefined) return 1;
-      if (bVal === null || bVal === undefined) return -1;
+        if (aVal === null || aVal === undefined) return 1;
+        if (bVal === null || bVal === undefined) return -1;
 
-      let comparison = 0;
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        comparison = aVal.localeCompare(bVal);
-      } else if (typeof aVal === 'number' && typeof bVal === 'number') {
-        comparison = aVal - bVal;
-      }
+        let comparison = 0;
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          comparison = aVal.localeCompare(bVal);
+        } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+          comparison = aVal - bVal;
+        }
 
-      return sort.direction === 'asc' ? comparison : -comparison;
-    });
+        return sort.direction === 'asc' ? comparison : -comparison;
+      });
+    }
 
     return result;
-  }, [items, filters, sort]);
+  }, [items, filters, sort, duplicateInfo.keys]);
 
   // Calculate stats - cost only for admin's own store
   const stats = useMemo(() => {
@@ -193,6 +232,7 @@ export default function InventoryPage() {
       min_quantity: null,
       max_quantity: null,
       store_id: null,
+      show_duplicates_only: false,
     });
   };
 
@@ -303,6 +343,8 @@ export default function InventoryPage() {
             onReset={resetFilters}
             stores={stores}
             showStoreFilter={true}
+            duplicateCount={duplicateInfo.count}
+            showDuplicatesFilter={true}
           />
         </CardContent>
       </Card>

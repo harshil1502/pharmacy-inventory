@@ -42,6 +42,7 @@ const defaultFilters: InventoryFilters = {
   min_quantity: null,
   max_quantity: null,
   store_id: null,
+  show_duplicates_only: false,
 };
 
 export const useAppStore = create<AppState>((set, get) => ({
