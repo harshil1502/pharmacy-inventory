@@ -18,8 +18,8 @@ export function parseInventoryReport(text: string): ParseResult {
   let reportDate = '';
   
   for (const line of lines.slice(0, 5)) {
-    // Match store name and code pattern like "KRUNAL PATEL APOTHECARY LTD (1021)"
-    const storeMatch = line.match(/([A-Z][A-Z\s]+(?:LTD|INC|CORP)?)\s*\((\d+)\)/i);
+    // Match store name and code pattern like "KRUNAL PATEL APOTHECARY LTD. (0713)"
+    const storeMatch = line.match(/([A-Z][A-Z\s]+(?:LTD|INC|CORP)?\.?)\s*\((\d+)\)/i);
     if (storeMatch) {
       storeName = storeMatch[1].trim();
       storeCode = storeMatch[2];
@@ -153,7 +153,7 @@ export function parseInventoryReportEnhanced(text: string): ParseResult {
   for (let i = 0; i < Math.min(lines.length, 5); i++) {
     const line = lines[i];
     
-    const storeMatch = line.match(/([A-Z][A-Z\s]+(?:LTD|INC|CORP|PHARMACY)?)\s*\((\d+)\)/i);
+    const storeMatch = line.match(/([A-Z][A-Z\s]+(?:LTD|INC|CORP|PHARMACY)?\.?)\s*\((\d+)\)/i);
     if (storeMatch) {
       storeName = storeMatch[1].trim();
       storeCode = storeMatch[2];

@@ -213,8 +213,8 @@ export async function POST(request: NextRequest) {
 
     // Log successful validation
     console.log(`[PDF Upload] Store validation passed:`);
-    console.log(`  - PDF Store Code: ${pdfStoreCode}`);
-    console.log(`  - PDF Store Name: ${storeFromPDF.name}`);
+    console.log(`  - PDF Store Code: ${pdfStoreCode || '(not in PDF)'}`);
+    console.log(`  - PDF Store Name: ${parsed.storeName || '(not in PDF)'}`);
     console.log(`  - Selected Store ID: ${storeId}`);
     console.log(`  - Uploader: ${userId} (${uploaderProfile.role})`)
 
