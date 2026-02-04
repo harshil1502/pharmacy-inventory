@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { Plus, Store as StoreIcon, Loader2, Printer, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { createClient } from '@/lib/supabase/client';
 import { useAppStore } from '@/lib/store';
 import { InventoryItem, SortOption, InventoryFilters as FilterType } from '@/types';
@@ -299,38 +301,68 @@ export default function MyPharmacyPage() {
     printWindow.print();
   };
 
-  // Export to CSV function
-  const handleExportCSV = () => {
+  // Export to PDF function
+  const handleExportPDF = () => {
     const storeName = user?.store?.name || 'Pharmacy';
-    const date = new Date().toISOString().split('T')[0];
+    const date = new Date().toLocaleDateString('en-CA');
     
-    const headers = ['Drug Name', 'Item Code', 'UPC', 'Quantity', 'Size', 'UOM', 'Days Aging', 'Marketing Status', 'Order Control'];
+    const doc = new jsPDF({ orientation: 'landscape' });
+    
+    // Title
+    doc.setFontSize(16);
+    doc.text(`${storeName} - Inventory Report`, 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()} | Items: ${filteredItems.length}`, 14, 22);
+    
+    // Table headers
+    const headers = ['Drug Name', 'Item Code', 'UPC', 'Qty', 'Size/UOM', 'Aging', 'Status'];
     if (canSeeCost) headers.push('Cost');
     
-    const rows = filteredItems.map(item => {
+    // Table data
+    const data = filteredItems.map(item => {
       const row = [
-        `"${item.description.replace(/"/g, '""')}"`,
+        item.description,
         item.item_code,
         item.manufacturer_code,
-        item.total_quantity,
-        item.size,
-        item.unit_of_measure,
-        item.days_aging ?? '',
-        item.marketing_status,
-        item.order_control,
+        item.total_quantity.toString(),
+        `${item.size} ${item.unit_of_measure}`,
+        item.days_aging !== null ? `${item.days_aging}d` : 'N/A',
+        `${item.marketing_status}/${item.order_control}`,
       ];
-      if (canSeeCost) row.push(item.cost.toFixed(2));
-      return row.join(',');
+      if (canSeeCost) row.push(`$${item.cost.toFixed(2)}`);
+      return row;
     });
     
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${storeName.replace(/\s+/g, '_')}_Inventory_${date}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    // Generate table
+    autoTable(doc, {
+      head: [headers],
+      body: data,
+      startY: 28,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [59, 130, 246] },
+      columnStyles: {
+        0: { cellWidth: 60 }, // Drug Name
+        1: { cellWidth: 25 }, // Item Code
+        2: { cellWidth: 30 }, // UPC
+        3: { cellWidth: 15, halign: 'center' }, // Qty
+        4: { cellWidth: 25, halign: 'center' }, // Size/UOM
+        5: { cellWidth: 18, halign: 'center' }, // Aging
+        6: { cellWidth: 25, halign: 'center' }, // Status
+        ...(canSeeCost ? { 7: { cellWidth: 22, halign: 'right' } } : {}), // Cost
+      },
+    });
+    
+    // Summary footer
+    const totalUnits = filteredItems.reduce((sum, i) => sum + i.total_quantity, 0);
+    const totalValue = filteredItems.reduce((sum, i) => sum + i.cost, 0);
+    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
+    doc.setFontSize(10);
+    let summary = `Summary: ${filteredItems.length} items | ${totalUnits.toLocaleString()} units`;
+    if (canSeeCost) summary += ` | Total Value: $${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    doc.text(summary, 14, finalY);
+    
+    // Save
+    doc.save(`${storeName.replace(/\s+/g, '_')}_Inventory_${date}.pdf`);
   };
 
   const resetFilters = () => {
@@ -385,9 +417,9 @@ export default function MyPharmacyPage() {
             <Printer className="h-4 w-4 mr-2" />
             Print
           </Button>
-          <Button variant="outline" onClick={handleExportCSV} title="Export to CSV">
+          <Button variant="outline" onClick={handleExportPDF} title="Export to PDF">
             <Download className="h-4 w-4 mr-2" />
-            Export
+            Export PDF
           </Button>
           <Button onClick={() => {
             setPrefilledRequest({});
