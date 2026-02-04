@@ -6,6 +6,7 @@ import {
   ChevronDown,
   MessageSquare,
   ArrowUpDown,
+  Star,
 } from 'lucide-react';
 import { InventoryItem, SortOption, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,10 @@ interface InventoryTableProps {
   currentStoreId?: string;
   userRole?: UserRole;
   onRequestClick?: (item: InventoryItem) => void;
+  // Favorites props
+  favorites?: Set<string>;
+  onToggleFavorite?: (din: string) => void;
+  showFavoritesFirst?: boolean;
 }
 
 export function InventoryTable({
@@ -37,9 +42,23 @@ export function InventoryTable({
   currentStoreId,
   userRole = 'regular',
   onRequestClick,
+  favorites = new Set(),
+  onToggleFavorite,
+  showFavoritesFirst = true,
 }: InventoryTableProps) {
   // Only admins and associates can see cost information
   const canSeeCost = userRole === 'admin' || userRole === 'associate';
+
+  // Sort items with favorites first if enabled
+  const sortedItems = showFavoritesFirst && favorites.size > 0
+    ? [...items].sort((a, b) => {
+        const aIsFav = favorites.has(a.item_code || '');
+        const bIsFav = favorites.has(b.item_code || '');
+        if (aIsFav && !bIsFav) return -1;
+        if (!aIsFav && bIsFav) return 1;
+        return 0;
+      })
+    : items;
 
   const handleSort = (field: keyof InventoryItem) => {
     // Don't allow sorting by cost if user can't see it
@@ -79,6 +98,12 @@ export function InventoryTable({
         <table className="w-full min-w-[900px]">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50">
+              {/* Favorites column */}
+              {onToggleFavorite && (
+                <th className="px-2 py-3 text-center w-10">
+                  <Star className="h-4 w-4 text-gray-400 mx-auto" />
+                </th>
+              )}
               {showStore && (
                 <th className="px-4 py-3 text-left">
                   <button
@@ -152,87 +177,113 @@ export function InventoryTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {items.map((item) => (
-              <tr
-                key={item.id}
-                className="hover:bg-gray-50 transition-colors"
-              >
-                {showStore && (
+            {sortedItems.map((item) => {
+              const isFavorite = favorites.has(item.item_code || '');
+              
+              return (
+                <tr
+                  key={item.id}
+                  className={cn(
+                    "hover:bg-gray-50 transition-colors",
+                    isFavorite && "bg-yellow-50/50"
+                  )}
+                >
+                  {/* Favorites star */}
+                  {onToggleFavorite && (
+                    <td className="px-2 py-3 text-center">
+                      <button
+                        onClick={() => item.item_code && onToggleFavorite(item.item_code)}
+                        className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        <Star
+                          className={cn(
+                            "h-5 w-5 transition-colors",
+                            isFavorite
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-300 hover:text-yellow-400"
+                          )}
+                        />
+                      </button>
+                    </td>
+                  )}
+                  {showStore && (
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-gray-900">
+                        {item.store?.name || 'Unknown'}
+                      </span>
+                      <span className="block text-xs text-gray-500">
+                        {item.store?.code}
+                      </span>
+                    </td>
+                  )}
                   <td className="px-4 py-3">
-                    <span className="text-sm font-medium text-gray-900">
-                      {item.store?.name || 'Unknown'}
+                    <span className="text-sm font-medium text-gray-900 block">
+                      {item.description}
                     </span>
-                    <span className="block text-xs text-gray-500">
-                      {item.store?.code}
-                    </span>
-                  </td>
-                )}
-                <td className="px-4 py-3">
-                  <span className="text-sm font-medium text-gray-900 block">
-                    {item.description}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    MFR: {item.manufacturer_code}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm text-gray-600 font-mono">
-                    {item.item_code}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span className="text-sm font-semibold text-gray-900">
-                    {formatNumber(item.total_quantity)}
-                  </span>
-                  {item.on_hand !== item.total_quantity && (
-                    <span className="block text-xs text-gray-500">
-                      ({formatNumber(item.on_hand)} on hand)
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span className="text-sm text-gray-600">
-                    {item.size} {item.unit_of_measure}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <Badge className={getAgingBadgeColor(item.days_aging)}>
-                    {item.days_aging !== null ? `${item.days_aging}d` : 'N/A'}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <div className="flex items-center justify-center space-x-1">
-                    <Badge variant={getMarketingStatusVariant(item.marketing_status)}>
-                      {getMarketingStatusLabel(item.marketing_status)}
-                    </Badge>
-                    <Badge variant="outline">
-                      {getOrderControlLabel(item.order_control)}
-                    </Badge>
-                  </div>
-                </td>
-                {/* Only show cost for admins */}
-                {canSeeCost && (
-                  <td className="px-4 py-3 text-right">
-                    <span className="text-sm font-medium text-gray-900">
-                      {formatCurrency(item.cost)}
+                    <span className="text-xs text-gray-500">
+                      MFR: {item.manufacturer_code}
                     </span>
                   </td>
-                )}
-                <td className="px-4 py-3 text-center">
-                  {showStore && item.store_id !== currentStoreId && onRequestClick && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onRequestClick(item)}
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                    >
-                      <MessageSquare className="h-4 w-4 mr-1" />
-                      Request
-                    </Button>
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-gray-600 font-mono">
+                      {item.item_code}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="text-sm font-semibold text-gray-900">
+                      {formatNumber(item.total_quantity)}
+                    </span>
+                    {item.on_hand !== item.total_quantity && (
+                      <span className="block text-xs text-gray-500">
+                        ({formatNumber(item.on_hand)} on hand)
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="text-sm text-gray-600">
+                      {item.size} {item.unit_of_measure}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <Badge className={getAgingBadgeColor(item.days_aging)}>
+                      {item.days_aging !== null ? `${item.days_aging}d` : 'N/A'}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center space-x-1">
+                      <Badge variant={getMarketingStatusVariant(item.marketing_status)}>
+                        {getMarketingStatusLabel(item.marketing_status)}
+                      </Badge>
+                      <Badge variant="outline">
+                        {getOrderControlLabel(item.order_control)}
+                      </Badge>
+                    </div>
+                  </td>
+                  {/* Only show cost for admins */}
+                  {canSeeCost && (
+                    <td className="px-4 py-3 text-right">
+                      <span className="text-sm font-medium text-gray-900">
+                        {formatCurrency(item.cost)}
+                      </span>
+                    </td>
                   )}
-                </td>
-              </tr>
-            ))}
+                  <td className="px-4 py-3 text-center">
+                    {showStore && item.store_id !== currentStoreId && onRequestClick && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onRequestClick(item)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Request
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

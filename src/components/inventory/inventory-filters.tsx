@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, X, Filter, Copy } from 'lucide-react';
+import { Search, X, Filter, Copy, Star } from 'lucide-react';
 import { Store, InventoryFilters as FilterType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,10 @@ interface InventoryFiltersProps {
   showStoreFilter?: boolean;
   duplicateCount?: number;
   showDuplicatesFilter?: boolean;
+  // Favorites
+  favoritesCount?: number;
+  showFavoritesOnly?: boolean;
+  onToggleFavoritesOnly?: (show: boolean) => void;
 }
 
 export function InventoryFilters({
@@ -33,6 +37,9 @@ export function InventoryFilters({
   showStoreFilter = false,
   duplicateCount = 0,
   showDuplicatesFilter = true,
+  favoritesCount = 0,
+  showFavoritesOnly = false,
+  onToggleFavoritesOnly,
 }: InventoryFiltersProps) {
   const hasActiveFilters =
     filters.search ||
@@ -239,6 +246,32 @@ export function InventoryFilters({
                 {duplicateCount > 0 && (
                   <Badge variant="secondary" className="bg-amber-100 text-amber-800">
                     {duplicateCount}
+                  </Badge>
+                )}
+              </Label>
+            </div>
+          </div>
+        )}
+
+        {/* Favorites Filter */}
+        {onToggleFavoritesOnly && (
+          <div className="space-y-1.5">
+            <Label className="text-xs text-gray-500">Favorites</Label>
+            <div className="flex items-center space-x-2 h-10 px-3 py-2 border rounded-md bg-white">
+              <Switch
+                id="show-favorites"
+                checked={showFavoritesOnly}
+                onCheckedChange={onToggleFavoritesOnly}
+              />
+              <Label
+                htmlFor="show-favorites"
+                className="text-sm font-normal cursor-pointer flex items-center gap-2"
+              >
+                <Star className="h-4 w-4 text-yellow-500 fill-yellow-400" />
+                Show Only
+                {favoritesCount > 0 && (
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                    {favoritesCount}
                   </Badge>
                 )}
               </Label>

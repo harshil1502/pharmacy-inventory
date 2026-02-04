@@ -13,6 +13,7 @@ import { RequestDrugDialog } from '@/components/inventory/request-drug-dialog';
 import { formatCurrency, formatNumber } from '@/lib/utils';
 import { fetchAllInventoryItems } from '@/lib/supabase/fetch-all-client';
 import { getDuplicateKey, getTrueDuplicateKeys } from '@/lib/utils/parse-drug';
+import { useFavorites } from '@/hooks/use-favorites';
 
 export default function MyPharmacyPage() {
   const supabase = createClient();
@@ -26,6 +27,10 @@ export default function MyPharmacyPage() {
     name?: string;
     storeId?: string;
   }>({});
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  
+  // Favorites hook
+  const { favorites, toggleFavorite, favoritesCount } = useFavorites();
 
   const [filters, setFilters] = useState<FilterType>({
     search: '',
@@ -109,7 +114,12 @@ export default function MyPharmacyPage() {
   const filteredItems = useMemo(() => {
     let result = [...items];
 
-    // Apply duplicates filter first (if enabled)
+    // Apply favorites filter first (if enabled)
+    if (showFavoritesOnly) {
+      result = result.filter((item) => favorites.has(item.item_code || ''));
+    }
+
+    // Apply duplicates filter (if enabled)
     if (filters.show_duplicates_only) {
       result = result.filter((item) =>
         duplicateInfo.keys.has(getDuplicateKey(item.description))
@@ -196,7 +206,7 @@ export default function MyPharmacyPage() {
     }
 
     return result;
-  }, [items, filters, sort, duplicateInfo.keys]);
+  }, [items, filters, sort, duplicateInfo.keys, showFavoritesOnly, favorites]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -323,6 +333,9 @@ export default function MyPharmacyPage() {
             showStoreFilter={false}
             duplicateCount={duplicateInfo.count}
             showDuplicatesFilter={true}
+            favoritesCount={favoritesCount}
+            showFavoritesOnly={showFavoritesOnly}
+            onToggleFavoritesOnly={setShowFavoritesOnly}
           />
         </CardContent>
       </Card>
@@ -338,6 +351,9 @@ export default function MyPharmacyPage() {
             currentStoreId={user?.store_id || undefined}
             userRole={user?.role}
             onRequestClick={handleRequestClick}
+            favorites={favorites}
+            onToggleFavorite={toggleFavorite}
+            showFavoritesFirst={!showFavoritesOnly}
           />
         </CardContent>
       </Card>
