@@ -264,6 +264,7 @@ export default function StoreInventoryPage() {
             <tr>
               <th>Drug Name</th>
               <th>Item Code</th>
+              <th>UPC</th>
               <th class="center">Qty</th>
               <th class="center">Size/UOM</th>
               <th class="center">Aging</th>
@@ -276,6 +277,7 @@ export default function StoreInventoryPage() {
               <tr>
                 <td>${item.description}</td>
                 <td class="mono">${item.item_code}</td>
+                <td class="mono">${item.manufacturer_code}</td>
                 <td class="center">${item.total_quantity}</td>
                 <td class="center">${item.size} ${item.unit_of_measure}</td>
                 <td class="center">${item.days_aging ?? 'N/A'}d</td>
@@ -302,7 +304,7 @@ export default function StoreInventoryPage() {
     const storeName = store?.name || 'Pharmacy';
     const date = new Date().toISOString().split('T')[0];
     
-    const headers = ['Drug Name', 'Item Code', 'Manufacturer', 'Quantity', 'Size', 'UOM', 'Days Aging', 'Marketing Status', 'Order Control'];
+    const headers = ['Drug Name', 'Item Code', 'UPC', 'Quantity', 'Size', 'UOM', 'Days Aging', 'Marketing Status', 'Order Control'];
     if (canSeeCost) headers.push('Cost');
     
     const rows = filteredItems.map(item => {
