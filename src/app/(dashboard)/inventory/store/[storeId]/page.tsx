@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import { Plus, Building2, Loader2 } from 'lucide-react';
+import { Plus, Building2, Loader2, Printer, Download } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAppStore } from '@/lib/store';
 import { InventoryItem, SortOption, InventoryFilters as FilterType, Store } from '@/types';
@@ -229,6 +229,108 @@ export default function StoreInventoryPage() {
     setShowRequestDialog(true);
   };
 
+  // Print function - opens browser print dialog with clean view
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    const storeName = store?.name || 'Pharmacy';
+    const date = new Date().toLocaleDateString('en-CA');
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${storeName} Inventory - ${date}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { font-size: 18px; margin-bottom: 5px; }
+          .subtitle { color: #666; font-size: 12px; margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; font-size: 11px; }
+          th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+          th { background: #f5f5f5; font-weight: bold; }
+          .right { text-align: right; }
+          .center { text-align: center; }
+          .mono { font-family: monospace; }
+          .summary { margin-top: 20px; font-size: 12px; }
+          @media print { body { -webkit-print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>
+        <h1>${storeName} - Inventory Report</h1>
+        <div class="subtitle">Generated: ${new Date().toLocaleString()} | Items: ${filteredItems.length}</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Drug Name</th>
+              <th>Item Code</th>
+              <th class="center">Qty</th>
+              <th class="center">Size/UOM</th>
+              <th class="center">Aging</th>
+              <th class="center">Status</th>
+              ${canSeeCost ? '<th class="right">Cost</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredItems.map(item => `
+              <tr>
+                <td>${item.description}</td>
+                <td class="mono">${item.item_code}</td>
+                <td class="center">${item.total_quantity}</td>
+                <td class="center">${item.size} ${item.unit_of_measure}</td>
+                <td class="center">${item.days_aging ?? 'N/A'}d</td>
+                <td class="center">${item.marketing_status}/${item.order_control}</td>
+                ${canSeeCost ? `<td class="right">$${item.cost.toFixed(2)}</td>` : ''}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div class="summary">
+          <strong>Summary:</strong> ${filteredItems.length} items | 
+          ${filteredItems.reduce((sum, i) => sum + i.total_quantity, 0).toLocaleString()} units
+          ${canSeeCost ? ` | Total Value: $${filteredItems.reduce((sum, i) => sum + i.cost, 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  // Export to CSV function
+  const handleExportCSV = () => {
+    const storeName = store?.name || 'Pharmacy';
+    const date = new Date().toISOString().split('T')[0];
+    
+    const headers = ['Drug Name', 'Item Code', 'Manufacturer', 'Quantity', 'Size', 'UOM', 'Days Aging', 'Marketing Status', 'Order Control'];
+    if (canSeeCost) headers.push('Cost');
+    
+    const rows = filteredItems.map(item => {
+      const row = [
+        `"${item.description.replace(/"/g, '""')}"`,
+        item.item_code,
+        item.manufacturer_code,
+        item.total_quantity,
+        item.size,
+        item.unit_of_measure,
+        item.days_aging ?? '',
+        item.marketing_status,
+        item.order_control,
+      ];
+      if (canSeeCost) row.push(item.cost.toFixed(2));
+      return row.join(',');
+    });
+    
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${storeName.replace(/\s+/g, '_')}_Inventory_${date}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const resetFilters = () => {
     setFilters({
       search: '',
@@ -276,13 +378,23 @@ export default function StoreInventoryPage() {
             Store Code: {store.code} • {store.address || 'No address on file'}
           </p>
         </div>
-        <Button onClick={() => {
-          setPrefilledRequest({ storeId: store.id });
-          setShowRequestDialog(true);
-        }}>
-          <Plus className="h-4 w-4 mr-2" />
-          Request from Store
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handlePrint} title="Print current view">
+            <Printer className="h-4 w-4 mr-2" />
+            Print
+          </Button>
+          <Button variant="outline" onClick={handleExportCSV} title="Export to CSV">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button onClick={() => {
+            setPrefilledRequest({ storeId: store.id });
+            setShowRequestDialog(true);
+          }}>
+            <Plus className="h-4 w-4 mr-2" />
+            Request from Store
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
