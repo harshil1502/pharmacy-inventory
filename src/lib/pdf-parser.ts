@@ -43,15 +43,15 @@ export function parseInventoryReport(text: string): ParseResult {
   const items: ParsedInventoryItem[] = [];
   let currentItem: Partial<ParsedInventoryItem> | null = null;
   
-  // Regex to match main item lines
+  // Regex to match main item lines - relaxed description length (8-80 chars)
   // Format: DAYS_AGING   ITEM_CODE MANUF_CODE   DESCRIPTION   SIZE   UOM   MS   O/C   B/R_STOCK   ON_HAND   TOTAL   COST
-  const mainItemRegex = /^\s*(\d+)?\s+(\d{5})\s+(\d{11})\s+(.{30,45}?)\s+(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/;
+  const mainItemRegex = /^\s*(\d+)?\s+(\d{5})\s+(\d{10,12})\s+(.{8,80}?)\s+(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/;
   
   // Regex for continuation lines (just days aging, quantity, and cost)
   const continuationRegex = /^\s+(\d+)\s+(\d+)\s+([\d.]+)\s*$/;
   
   // Alternative main item regex with more flexible spacing
-  const altMainItemRegex = /^\s*(\d+)?\s*(\d{5})\s+(\d{11})\s+(.+?)\s{2,}(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/;
+  const altMainItemRegex = /^\s*(\d+)?\s*(\d{5})\s+(\d{10,12})\s+(.+?)\s{2,}(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/;
 
   for (const line of lines) {
     // Skip header lines and empty lines
@@ -177,12 +177,16 @@ export function parseInventoryReportEnhanced(text: string): ParseResult {
   const items: ParsedInventoryItem[] = [];
   const itemMap = new Map<string, ParsedInventoryItem>();
   
-  // More flexible regex patterns
+  // More flexible regex patterns - relaxed description length to 8-80 chars
   const patterns = [
-    // Pattern 1: Full line with days aging
-    /^\s*(\d+)\s+(\d{5})\s+(\d{11})\s+(.{20,50}?)\s+(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/,
+    // Pattern 1: Full line with days aging at start
+    /^\s*(\d+)\s+(\d{5})\s+(\d{10,12})\s+(.{8,80}?)\s+(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/,
     // Pattern 2: Full line without days aging (starts with item code)
-    /^\s+(\d{5})\s+(\d{11})\s+(.{20,50}?)\s+(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/,
+    /^\s+(\d{5})\s+(\d{10,12})\s+(.{8,80}?)\s+(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/,
+    // Pattern 3: More flexible spacing - use greedy description match up to numbers
+    /^\s*(\d+)\s+(\d{5})\s+(\d{10,12})\s+(.+?)\s{2,}(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/,
+    // Pattern 4: Without days aging, flexible spacing
+    /^\s+(\d{5})\s+(\d{10,12})\s+(.+?)\s{2,}(\d+)\s+([A-Z]+)\s+([A-Z])\s+([A-Z])\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)/,
   ];
 
   for (const line of lines) {
@@ -205,8 +209,8 @@ export function parseInventoryReportEnhanced(text: string): ParseResult {
       continue;
     }
 
-    // Try pattern 1 (with days aging)
-    let match = line.match(patterns[0]);
+    // Try patterns with days aging first (patterns 0 and 2)
+    let match = line.match(patterns[0]) || line.match(patterns[2]);
     if (match) {
       const item: ParsedInventoryItem = {
         days_aging: parseInt(match[1]),
@@ -230,8 +234,8 @@ export function parseInventoryReportEnhanced(text: string): ParseResult {
       continue;
     }
 
-    // Try pattern 2 (without days aging)
-    match = line.match(patterns[1]);
+    // Try patterns without days aging (patterns 1 and 3)
+    match = line.match(patterns[1]) || line.match(patterns[3]);
     if (match) {
       const item: ParsedInventoryItem = {
         days_aging: null,
